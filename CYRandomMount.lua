@@ -6,13 +6,6 @@ local flyingBox
 local groundBox
 local RefreshTime = 10
 
--- Settings table for saving
-local function InitCYRandomMountDB()
-    if not CYRandomMountDB then
-        CYRandomMountDB = {}
-    end
-end
-
 -- 載入設定面板
 local optionsLoaded = false
 local function LoadOptions()
@@ -75,6 +68,7 @@ end
 
 local function GetRandomSelectedFlyingMount()
     local selected = {}
+    flyingBox = CYRandomMountOptions.flyingBox() -- Get flyingBox from options panel
     if flyingBox and flyingBox.checks then
         for _, check in ipairs(flyingBox.checks) do
             if check:GetChecked() then
@@ -90,6 +84,7 @@ end
 
 local function GetRandomSelectedGroundMount()
     local selected = {}
+    groundBox = CYRandomMountOptions.groundBox() -- Get groundBox from options panel
     if groundBox and groundBox.checks then
         for _, check in ipairs(groundBox.checks) do
             if check:GetChecked() then
@@ -120,7 +115,7 @@ local function UpdateMountMacroByZone()
     -- print("Update macro: " .. macroName .. ", isFlyable: " .. tostring(isFlyable) .. ", macroIndex: " .. tostring(macroIndex))
     if macroIndex then
         if isFlyable then
-            print("Flyable area, using flying mount")
+            -- print("Flyable area, using flying mount")
             local mountID = GetRandomSelectedFlyingMount()
             -- print("mountID: " .. tostring(mountID))
             if mountID then
@@ -135,7 +130,7 @@ local function UpdateMountMacroByZone()
                 EditMacro(macroIndex, macroName, macroIcon, "#showtooltip Flying Mount\n/dismount [mounted]\n/cast Flying Mount")
             end
         else
-            print("Not flyable area, using ground mount")
+            -- print("Not flyable area, using ground mount")
             -- Use ground mount if not flyable
             local mountID = GetRandomSelectedGroundMount()
             -- print("mountID: " .. tostring(mountID))
@@ -162,7 +157,7 @@ zoneUpdateFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 zoneUpdateFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 zoneUpdateFrame:SetScript("OnEvent", function()
     C_Timer.After(1, function()  -- Delay 1 second to ensure zone change is complete
-        print("Zone changed, updating macro")
+        -- print("Zone changed, updating macro")
         UpdateMountMacroByZone()
     end)
 end)
@@ -170,6 +165,7 @@ end)
 local timer = CreateFrame("Frame")
 timer.elapsed = 0
 timer:SetScript("OnUpdate", function(self, elapsed)
+    RefreshTime = CYRandomMountDB.RefreshTime or 10
     if type(RefreshTime) ~= "number" or RefreshTime <= 0 then return end
     self.elapsed = self.elapsed + elapsed
     -- print("isAddonLoaded: " .. tostring(isAddonLoaded) .. ", elapsed: " .. tostring(self.elapsed) .. ", RefreshTime: " .. tostring(RefreshTime))

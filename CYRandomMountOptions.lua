@@ -17,6 +17,7 @@ local function InitCYRandomMountDB()
     if not CYRandomMountDB then
         CYRandomMountDB = {}
     end
+    print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
 end
 
 local function SaveSelectedMounts()
