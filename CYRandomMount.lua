@@ -6,31 +6,28 @@ local flyingBox
 local groundBox
 local RefreshTime = 10
 
--- 載入設定面板
+-- 狀態旗標
+local isAddonLoaded = false
+local isPlayerLoggedIn = false
 local optionsLoaded = false
-local function LoadOptions()
-    if not optionsLoaded then
-        -- 載入設定檔案
-        -- 若已在 TOC 加入 CYRandomMountOptions.lua 可省略
-        -- dofile("Interface\\AddOns\\CYRandomMount\\CYRandomMountOptions.lua")
+
+local function TryLoadOptions()
+    if isAddonLoaded and isPlayerLoggedIn and not optionsLoaded then
         CYRandomMountOptions.CreateOptionsPanel()
         optionsLoaded = true
     end
 end
 
-local isAddonLoaded = false
-local function OnAddonLoaded()
-    LoadOptions()
-    -- 之後取得設定面板的變數可用 CYRandomMountOptions.flyingBox() 等
-end
-
-local addonInitFrame = CreateFrame("Frame")
-addonInitFrame:RegisterEvent("ADDON_LOADED")
-addonInitFrame:SetScript("OnEvent", function(self, event, addonName)
-    if addonName == "CYRandomMount" then
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("ADDON_LOADED")
+eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:SetScript("OnEvent", function(self, event, arg1)
+    if event == "ADDON_LOADED" and arg1 == "CYRandomMount" then
         isAddonLoaded = true
-        OnAddonLoaded()
-        self:UnregisterEvent("ADDON_LOADED")
+        TryLoadOptions()
+    elseif event == "PLAYER_LOGIN" then
+        isPlayerLoggedIn = true
+        TryLoadOptions()
     end
 end)
 
