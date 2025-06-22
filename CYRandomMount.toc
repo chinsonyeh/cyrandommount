@@ -1,0 +1,9 @@
+## Interface: 110002
+## Title: CYRandomMount
+## Notes: Give you a random mount according to if the area flyable.
+## Author: chinsonyeh
+## Version: 1.0
+## SavedVariables: CYRandomMountDB
+
+CYRandomMountOptions.lua
+CYRandomMount.lua
