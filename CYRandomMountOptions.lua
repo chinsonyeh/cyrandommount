@@ -17,6 +17,12 @@ local function InitCYRandomMountDB()
     if not CYRandomMountDB then
         CYRandomMountDB = {}
     end
+    if not CYRandomMountDB.FlyingMounts then
+        CYRandomMountDB.FlyingMounts = {}
+    end
+    if not CYRandomMountDB.GroundMounts then
+        CYRandomMountDB.GroundMounts = {}
+    end
     print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
 end
 
