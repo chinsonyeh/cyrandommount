@@ -104,7 +104,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         for i = 1, #mountIDs do
             local mountID = mountIDs[i]
             local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
-            if isCollected and isFavorite and name and icon and (not hideOnChar) and isUsable then
+            if isCollected and name and icon and (not hideOnChar) and isUsable then
                 table.insert(availableMounts, {mountID = mountID, name = name, icon = icon})
             end
         end
@@ -112,68 +112,62 @@ function CYRandomMountOptions.CreateOptionsPanel()
         local flyingMounts, groundMounts = {}, {}
         for _, mount in ipairs(availableMounts) do
             local mountTypeID = select(5, C_MountJournal.GetMountInfoExtraByID(mount.mountID))
-            if mountTypeID == 424 or mountTypeID == 241 or mountTypeID == 402 or mountTypeID == 269 then
+            if mountTypeID == 402 or mountTypeID == 269 then
                 table.insert(flyingMounts, mount)
+            elseif mountTypeID == 241 or mountTypeID == 424  then
+                table.insert(flyingMounts, mount)
+                table.insert(groundMounts, mount)
             else
                 table.insert(groundMounts, mount)
             end
         end
 
-        flyingBox = CreateFrame("Frame", nil, panel)
-        flyingBox:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -36)
-        flyingBox:SetSize(220, math.max(32, #flyingMounts * 24))
-        flyingBox.bg = flyingBox:CreateTexture(nil, "BACKGROUND")
-        flyingBox.bg:SetAllPoints()
-        flyingBox.bg:SetColorTexture(0,0,0,0.2)
-        local flyingTitle = flyingBox:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        flyingTitle:SetPoint("TOPLEFT", 4, -4)
-        flyingTitle:SetText("Flying Mounts")
-        flyingBox.checks = {}
-        for i, mount in ipairs(flyingMounts) do
-            local check = CreateFrame("CheckButton", nil, flyingBox, "ChatConfigCheckButtonTemplate")
-            check:SetPoint("TOPLEFT", 8, -((i-1)*24)-24)
-            check.mountID = mount.mountID
-            flyingBox.checks[#flyingBox.checks+1] = check
-            check.icon = flyingBox:CreateTexture(nil, "ARTWORK")
-            check.icon:SetSize(18,18)
-            check.icon:SetPoint("LEFT", check, "RIGHT", 4, 0)
-            check.icon:SetTexture(mount.icon)
-            check.textLabel = flyingBox:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-            check.textLabel:SetPoint("LEFT", check.icon, "RIGHT", 4, 0)
-            check.textLabel:SetText(mount.name)
-            check.textLabel:SetJustifyH("LEFT")
-            check.textLabel:SetWidth(150)
-            check.textLabel:SetHeight(18)
-            check:SetScript("OnClick", SaveSelectedMounts)
+        -- 決定是否需要 ScrollFrame
+        local function CreateMountBox(mounts, parent, label)
+            local box, scrollFrame, scrollChild, title
+            box = CreateFrame("Frame", nil, parent)
+            box:SetSize(220, (#mounts > 20) and 360 or math.max(32, #mounts * 24))
+            title = box:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+            title:SetPoint("TOPLEFT", 4, -4)
+            title:SetText(label)
+            if #mounts > 20 then
+                scrollFrame = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
+                scrollFrame:SetPoint("TOPLEFT", box, "TOPLEFT", 0, -24)
+                scrollFrame:SetSize(220, 336)
+                scrollChild = CreateFrame("Frame", nil, scrollFrame)
+                scrollChild:SetSize(200, #mounts * 24 + 8)
+                scrollFrame:SetScrollChild(scrollChild)
+            end
+            box.bg = box:CreateTexture(nil, "BACKGROUND")
+            box.bg:SetAllPoints()
+            box.bg:SetColorTexture(0,0,0,0.2)
+            box.checks = {}
+            for i, mount in ipairs(mounts) do
+                local parentFrame = scrollChild or box
+                local yOffset = (#mounts > 20) and -((i-1)*24) or -((i-1)*24)-24
+                local check = CreateFrame("CheckButton", nil, parentFrame, "ChatConfigCheckButtonTemplate")
+                check:SetPoint("TOPLEFT", 8, yOffset)
+                check.mountID = mount.mountID
+                box.checks[#box.checks+1] = check
+                check.icon = parentFrame:CreateTexture(nil, "ARTWORK")
+                check.icon:SetSize(18,18)
+                check.icon:SetPoint("LEFT", check, "RIGHT", 4, 0)
+                check.icon:SetTexture(mount.icon)
+                check.textLabel = parentFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+                check.textLabel:SetPoint("LEFT", check.icon, "RIGHT", 4, 0)
+                check.textLabel:SetText(mount.name)
+                check.textLabel:SetJustifyH("LEFT")
+                check.textLabel:SetWidth(150)
+                check.textLabel:SetHeight(18)
+                check:SetScript("OnClick", SaveSelectedMounts)
+            end
+            return box
         end
 
-        groundBox = CreateFrame("Frame", nil, panel)
+        flyingBox = CreateMountBox(flyingMounts, panel, "Flying Mounts")
+        flyingBox:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -36)
+        groundBox = CreateMountBox(groundMounts, panel, "Ground Mounts")
         groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
-        groundBox:SetSize(220, math.max(32, #groundMounts * 24))
-        groundBox.bg = groundBox:CreateTexture(nil, "BACKGROUND")
-        groundBox.bg:SetAllPoints()
-        groundBox.bg:SetColorTexture(0,0,0,0.2)
-        local groundTitle = groundBox:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        groundTitle:SetPoint("TOPLEFT", 4, -4)
-        groundTitle:SetText("Ground Mounts")
-        groundBox.checks = {}
-        for i, mount in ipairs(groundMounts) do
-            local check = CreateFrame("CheckButton", nil, groundBox, "ChatConfigCheckButtonTemplate")
-            check:SetPoint("TOPLEFT", 8, -((i-1)*24)-24)
-            check.mountID = mount.mountID
-            groundBox.checks[#groundBox.checks+1] = check
-            check.icon = groundBox:CreateTexture(nil, "ARTWORK")
-            check.icon:SetSize(18,18)
-            check.icon:SetPoint("LEFT", check, "RIGHT", 4, 0)
-            check.icon:SetTexture(mount.icon)
-            check.textLabel = groundBox:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-            check.textLabel:SetPoint("LEFT", check.icon, "RIGHT", 4, 0)
-            check.textLabel:SetText(mount.name)
-            check.textLabel:SetJustifyH("LEFT")
-            check.textLabel:SetWidth(150)
-            check.textLabel:SetHeight(18)
-            check:SetScript("OnClick", SaveSelectedMounts)
-        end
 
         local category = Settings.RegisterCanvasLayoutCategory(panel, "CYRandomMount")
         Settings.RegisterAddOnCategory(category)
@@ -184,7 +178,39 @@ function CYRandomMountOptions.CreateOptionsPanel()
         end
 
         LoadSettings()
-        panel:HookScript("OnShow", LoadSettings)
+        local function UpdateMountListAndSettings()
+            -- 重新取得可用坐騎
+            local availableMounts = {}
+            local mountIDs = C_MountJournal.GetMountIDs()
+            for i = 1, #mountIDs do
+                local mountID = mountIDs[i]
+                local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+                if isCollected and name and icon and (not hideOnChar) and isUsable then
+                    table.insert(availableMounts, {mountID = mountID, name = name, icon = icon})
+                end
+            end
+            local flyingMounts, groundMounts = {}, {}
+            for _, mount in ipairs(availableMounts) do
+                local mountTypeID = select(5, C_MountJournal.GetMountInfoExtraByID(mount.mountID))
+                if mountTypeID == 402 or mountTypeID == 269 then
+                    table.insert(flyingMounts, mount)
+                elseif mountTypeID == 241 or mountTypeID == 424  then
+                    table.insert(flyingMounts, mount)
+                    table.insert(groundMounts, mount)
+                else
+                    table.insert(groundMounts, mount)
+                end
+            end
+            -- 重新建立選項按鈕
+            if flyingBox then flyingBox:Hide() end
+            if groundBox then groundBox:Hide() end
+            flyingBox = CreateMountBox(flyingMounts, panel, "Flying Mounts")
+            flyingBox:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -36)
+            groundBox = CreateMountBox(groundMounts, panel, "Ground Mounts")
+            groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
+            LoadSettings()
+        end
+        panel:HookScript("OnShow", UpdateMountListAndSettings)
         panel:HookScript("OnHide", SaveSelectedMounts)
     else
         panel = CreateFrame("Frame", "cyrandommountOptionsPanel", UIParent)
