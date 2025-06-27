@@ -98,6 +98,11 @@ end
 local lastZoneType = nil
 local lastIsFlyable = nil
 local function UpdateMountMacroByZone()
+    -- Pause auto-update if player is editing macro
+    if MacroFrame and MacroFrame:IsShown() then
+        return
+    end
+
     -- Check if area is flyable
     local isFlyable = IsFlyableArea and IsFlyableArea() or false
     lastIsFlyable = isFlyable
