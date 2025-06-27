@@ -49,10 +49,10 @@ Remove-Item $tempDir -Recurse -Force
 # 刪除原始 zip 檔案
 Remove-Item $zipFile -Force
 
-# 將CYRandomMount資料夾壓縮成 zip
-$zipOutput = "$destDir.zip"
+# 將CYRandomMount資料夾壓縮成 zip，檔名包含版本號
+$zipOutput = "CYRandomMount-$githubTag.zip"
 if (Test-Path $zipOutput) { Remove-Item $zipOutput -Force }
-Compress-Archive -Path $destDir/* -DestinationPath $zipOutput
+Compress-Archive -Path $destDir -DestinationPath $zipOutput
 Write-Host "Created: $(Split-Path $zipOutput -Leaf)"
 
 # 刪除 CYRandomMount 資料夾
