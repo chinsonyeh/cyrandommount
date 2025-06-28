@@ -6,7 +6,7 @@ local flyingBox
 local groundBox
 local RefreshTime = 10
 
--- 狀態旗標
+-- State flags
 local isAddonLoaded = false
 local isPlayerLoggedIn = false
 local optionsLoaded = false
@@ -36,6 +36,7 @@ local macroName = "CYRandomMount"
 local macroIcon = "INV_Misc_QuestionMark"
 local macroBody = "#showtooltip Renewed Proto-Drake\n/cast Renewed Proto-Drake"
 
+
 local function CreateMountMacro()
     -- Check if macro already exists
     for i = 1, GetNumMacros() do
@@ -46,6 +47,8 @@ local function CreateMountMacro()
     end
     -- Create new macro
     if GetNumMacros() < MAX_ACCOUNT_MACROS then
+        -- Only run CYRandomMount_InstantUpdate() when mounted
+        local macroBody = "#showtooltip\n/run CYRandomMount_InstantUpdate()\n/cast CYRandomMount"
         CreateMacro(macroName, macroIcon, macroBody, false)
     end
 end
@@ -116,6 +119,9 @@ local function UpdateMountMacroByZone()
     end
     -- print("Update macro: " .. macroName .. ", isFlyable: " .. tostring(isFlyable) .. ", macroIndex: " .. tostring(macroIndex))
     if macroIndex then
+        -- Only run CYRandomMount_InstantUpdate() when mounted
+        local macroPrefix = "#showtooltip\n/run if IsMounted() then CYRandomMount_InstantUpdate() end\n"
+        local macroBody = nil
         if isFlyable then
             -- print("Flyable area, using flying mount")
             local mountID = GetRandomSelectedFlyingMount()
@@ -124,12 +130,15 @@ local function UpdateMountMacroByZone()
                 local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
                 name = SanitizeMacroName(name)
                 if isUsable then
-                    EditMacro(macroIndex, macroName, icon or macroIcon, "#showtooltip "..name.."\n/dismount [mounted]\n/cast "..name)
+                    macroBody = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+                    EditMacro(macroIndex, macroName, icon or macroIcon, macroBody)
                 else
-                    EditMacro(macroIndex, macroName, macroIcon, "#showtooltip Flying Mount\n/dismount [mounted]\n/cast Flying Mount")
+                    macroBody = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Flying Mount"
+                    EditMacro(macroIndex, macroName, macroIcon, macroBody)
                 end
             else
-                EditMacro(macroIndex, macroName, macroIcon, "#showtooltip Flying Mount\n/dismount [mounted]\n/cast Flying Mount")
+                macroBody = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Flying Mount"
+                EditMacro(macroIndex, macroName, macroIcon, macroBody)
             end
         else
             -- print("Not flyable area, using ground mount")
@@ -140,14 +149,24 @@ local function UpdateMountMacroByZone()
                 local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
                 name = SanitizeMacroName(name)
                 if isUsable then
-                    EditMacro(macroIndex, macroName, icon or macroIcon, "#showtooltip "..name.."\n/dismount [mounted]\n/cast "..name)
+                    macroBody = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+                    EditMacro(macroIndex, macroName, icon or macroIcon, macroBody)
                 else
-                    EditMacro(macroIndex, macroName, macroIcon, "#showtooltip Ground Mount\n/dismount [mounted]\n/cast Ground Mount")
+                    macroBody = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Ground Mount"
+                    EditMacro(macroIndex, macroName, macroIcon, macroBody)
                 end
             else
-                EditMacro(macroIndex, macroName, macroIcon, "#showtooltip Ground Mount\n/dismount [mounted]\n/cast Ground Mount")
+                macroBody = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Ground Mount"
+                EditMacro(macroIndex, macroName, macroIcon, macroBody)
             end            
         end
+    end
+end
+
+-- Add: instant macro update function
+function CYRandomMount_InstantUpdate()
+    if CYRandomMountOptions and CYRandomMountOptions.UpdateMacroMode and CYRandomMountOptions.UpdateMacroMode() == 1 then
+        UpdateMountMacroByZone()
     end
 end
 
@@ -168,7 +187,7 @@ local timer = CreateFrame("Frame")
 timer.elapsed = 0
 timer:SetScript("OnUpdate", function(self, elapsed)
     RefreshTime = CYRandomMountDB.RefreshTime or 10
-    if type(RefreshTime) ~= "number" or RefreshTime <= 0 then return end
+    if type(RefreshTime) ~= "number" or RefreshTime <= 0 or CYRandomMountOptions.UpdateMacroMode() == 1 then return end
     self.elapsed = self.elapsed + elapsed
     -- print("isAddonLoaded: " .. tostring(isAddonLoaded) .. ", elapsed: " .. tostring(self.elapsed) .. ", RefreshTime: " .. tostring(RefreshTime))
     if isAddonLoaded and self.elapsed >= RefreshTime then

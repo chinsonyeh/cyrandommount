@@ -1,9 +1,10 @@
--- CYRandomMount 設定面板
+-- CYRandomMount Options Panel
 
 local panel, refreshTimeSlider, refreshTimeText, flyingBox, groundBox
 local RefreshTime = 10
+local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
 
--- 讓主程式可以取得這些變數
+-- Expose variables to main program
 CYRandomMountOptions = {}
 CYRandomMountOptions.panel = function() return panel end
 CYRandomMountOptions.flyingBox = function() return flyingBox end
@@ -12,6 +13,8 @@ CYRandomMountOptions.refreshTimeSlider = function() return refreshTimeSlider end
 CYRandomMountOptions.refreshTimeText = function() return refreshTimeText end
 CYRandomMountOptions.RefreshTime = function() return RefreshTime end
 CYRandomMountOptions.SetRefreshTime = function(v) RefreshTime = v end
+CYRandomMountOptions.UpdateMacroMode = function() return UpdateMacroMode end
+CYRandomMountOptions.SetUpdateMacroMode = function(v) UpdateMacroMode = v end
 
 local function InitCYRandomMountDB()
     if not CYRandomMountDB then
@@ -43,6 +46,7 @@ local function SaveSelectedMounts()
             end
         end
     end
+    CYRandomMountDB.UpdateMacroMode = UpdateMacroMode
 end
 
 local function LoadSettings()
@@ -51,6 +55,11 @@ local function LoadSettings()
         RefreshTime = CYRandomMountDB.RefreshTime
         refreshTimeSlider:SetValue(RefreshTime)
         refreshTimeText:SetText(tostring(RefreshTime))
+    end
+    if CYRandomMountDB.UpdateMacroMode then
+        UpdateMacroMode = CYRandomMountDB.UpdateMacroMode
+        if updateMacroRadio1 then updateMacroRadio1:SetChecked(UpdateMacroMode == 1) end
+        if updateMacroRadio2 then updateMacroRadio2:SetChecked(UpdateMacroMode == 2) end
     end
     if CYRandomMountDB.FlyingMounts and flyingBox and flyingBox.checks then
         local selected = {}
@@ -79,7 +88,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         
         local refreshTimeTitle = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         refreshTimeTitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
-        refreshTimeTitle:SetText("Refresh Time:")
+        refreshTimeTitle:SetText("Refresh Time (sec):")
 
         refreshTimeSlider = CreateFrame("Slider", nil, panel, "OptionsSliderTemplate")
         refreshTimeSlider:SetOrientation("HORIZONTAL")
@@ -99,30 +108,36 @@ function CYRandomMountOptions.CreateOptionsPanel()
             CYRandomMountDB.RefreshTime = value
         end)
 
-        local availableMounts = {}
-        local mountIDs = C_MountJournal.GetMountIDs()
-        for i = 1, #mountIDs do
-            local mountID = mountIDs[i]
-            local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
-            if isCollected and name and icon and (not hideOnChar) and isUsable then
-                table.insert(availableMounts, {mountID = mountID, name = name, icon = icon})
-            end
-        end
+        -- Add macro update timing option
+        local updateMacroTitle = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        updateMacroTitle:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -32)
+        updateMacroTitle:SetText("Macro update timing:")
 
-        local flyingMounts, groundMounts = {}, {}
-        for _, mount in ipairs(availableMounts) do
-            local mountTypeID = select(5, C_MountJournal.GetMountInfoExtraByID(mount.mountID))
-            if mountTypeID == 402 or mountTypeID == 269 then
-                table.insert(flyingMounts, mount)
-            elseif mountTypeID == 241 or mountTypeID == 424  then
-                table.insert(flyingMounts, mount)
-                table.insert(groundMounts, mount)
-            else
-                table.insert(groundMounts, mount)
-            end
-        end
+        updateMacroRadio1 = CreateFrame("CheckButton", nil, panel, "UIRadioButtonTemplate")
+        updateMacroRadio1:SetPoint("TOPLEFT", updateMacroTitle, "BOTTOMLEFT", 0, -4)
+        updateMacroRadio1.text = updateMacroRadio1:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        updateMacroRadio1.text:SetPoint("LEFT", updateMacroRadio1, "RIGHT", 4, 0)
+        updateMacroRadio1.text:SetText("Update macro immediately when random mount is called")
+        updateMacroRadio1:SetScript("OnClick", function()
+            updateMacroRadio1:SetChecked(true)
+            updateMacroRadio2:SetChecked(false)
+            UpdateMacroMode = 1
+            SaveSelectedMounts()
+        end)
 
-        -- 決定是否需要 ScrollFrame
+        updateMacroRadio2 = CreateFrame("CheckButton", nil, panel, "UIRadioButtonTemplate")
+        updateMacroRadio2:SetPoint("TOPLEFT", updateMacroRadio1, "BOTTOMLEFT", 0, -4)
+        updateMacroRadio2.text = updateMacroRadio2:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        updateMacroRadio2.text:SetPoint("LEFT", updateMacroRadio2, "RIGHT", 4, 0)
+        updateMacroRadio2.text:SetText("Only update macro every RefreshTime seconds")
+        updateMacroRadio2:SetScript("OnClick", function()
+            updateMacroRadio1:SetChecked(false)
+            updateMacroRadio2:SetChecked(true)
+            UpdateMacroMode = 2
+            SaveSelectedMounts()
+        end)
+
+        -- Decide if ScrollFrame is needed
         local function CreateMountBox(mounts, parent, label)
             local box, scrollFrame, scrollChild, title
             box = CreateFrame("Frame", nil, parent)
@@ -164,22 +179,8 @@ function CYRandomMountOptions.CreateOptionsPanel()
             return box
         end
 
-        flyingBox = CreateMountBox(flyingMounts, panel, "Flying Mounts")
-        flyingBox:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -36)
-        groundBox = CreateMountBox(groundMounts, panel, "Ground Mounts")
-        groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
-
-        local category = Settings.RegisterCanvasLayoutCategory(panel, "CYRandomMount")
-        Settings.RegisterAddOnCategory(category)
-
-        SLASH_CYRandomMount1 = "/cyrandommount"
-        SlashCmdList["CYRandomMount"] = function()
-            Settings.OpenToCategory("CYRandomMount")
-        end
-
-        LoadSettings()
         local function UpdateMountListAndSettings()
-            -- 重新取得可用坐騎
+            -- Refresh available mounts
             local availableMounts = {}
             local mountIDs = C_MountJournal.GetMountIDs()
             for i = 1, #mountIDs do
@@ -196,20 +197,45 @@ function CYRandomMountOptions.CreateOptionsPanel()
                     table.insert(flyingMounts, mount)
                 elseif mountTypeID == 241 or mountTypeID == 424  then
                     table.insert(flyingMounts, mount)
-                    table.insert(groundMounts, mount)
                 else
                     table.insert(groundMounts, mount)
                 end
             end
-            -- 重新建立選項按鈕
+            -- Add flying mounts that are not in ground mounts
+            for _, mount in ipairs(flyingMounts) do
+                local found = false
+                for _, gmount in ipairs(groundMounts) do
+                    if gmount.mountID == mount.mountID then
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    table.insert(groundMounts, mount)
+                end
+            end
+            -- Rebuild option buttons
             if flyingBox then flyingBox:Hide() end
             if groundBox then groundBox:Hide() end
-            flyingBox = CreateMountBox(flyingMounts, panel, "Flying Mounts")
-            flyingBox:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -36)
-            groundBox = CreateMountBox(groundMounts, panel, "Ground Mounts")
+            flyingBox = CreateMountBox(flyingMounts, panel, "Mounts for Flying area")
+            flyingBox:SetPoint("TOPLEFT", updateMacroRadio2, "BOTTOMLEFT", 0, -24)
+            groundBox = CreateMountBox(groundMounts, panel, "Mounts for Ground only area")
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
             LoadSettings()
         end
+
+
+        local category = Settings.RegisterCanvasLayoutCategory(panel, "CYRandomMount")
+        Settings.RegisterAddOnCategory(category)
+
+        SLASH_CYRandomMount1 = "/cyrandommount"
+        SlashCmdList["CYRandomMount"] = function()
+            Settings.OpenToCategory("CYRandomMount")
+        end
+
+        UpdateMountListAndSettings()
+        LoadSettings()
+
         panel:HookScript("OnShow", UpdateMountListAndSettings)
         panel:HookScript("OnHide", SaveSelectedMounts)
     else
