@@ -29,9 +29,8 @@ local function InitCYRandomMountDB()
     -- print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
 end
 
-local function SaveSelectedMounts()
+local function SaveSelectedFlyingMounts()
     CYRandomMountDB.FlyingMounts = {}
-    CYRandomMountDB.GroundMounts = {}
     if flyingBox and flyingBox.checks then
         for _, check in ipairs(flyingBox.checks) do
             if check:GetChecked() then
@@ -39,6 +38,10 @@ local function SaveSelectedMounts()
             end
         end
     end
+end
+
+local function SaveSelectedGroundMounts()
+    CYRandomMountDB.GroundMounts = {}
     if groundBox and groundBox.checks then
         for _, check in ipairs(groundBox.checks) do
             if check:GetChecked() then
@@ -46,7 +49,6 @@ local function SaveSelectedMounts()
             end
         end
     end
-    CYRandomMountDB.UpdateMacroMode = UpdateMacroMode
 end
 
 local function LoadSettings()
@@ -122,7 +124,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             updateMacroRadio1:SetChecked(true)
             updateMacroRadio2:SetChecked(false)
             UpdateMacroMode = 1
-            SaveSelectedMounts()
+            CYRandomMountDB.UpdateMacroMode = UpdateMacroMode
         end)
 
         updateMacroRadio2 = CreateFrame("CheckButton", nil, panel, "UIRadioButtonTemplate")
@@ -134,7 +136,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             updateMacroRadio1:SetChecked(false)
             updateMacroRadio2:SetChecked(true)
             UpdateMacroMode = 2
-            SaveSelectedMounts()
+            CYRandomMountDB.UpdateMacroMode = UpdateMacroMode
         end)
 
         -- Decide if ScrollFrame is needed
@@ -174,7 +176,15 @@ function CYRandomMountOptions.CreateOptionsPanel()
                 check.textLabel:SetJustifyH("LEFT")
                 check.textLabel:SetWidth(150)
                 check.textLabel:SetHeight(18)
-                check:SetScript("OnClick", SaveSelectedMounts)
+                check:SetScript("OnClick", function()
+                    if label:lower():find("flying") then
+                        SaveSelectedFlyingMounts()
+                        -- print("Selected flying mounts saved.")
+                    elseif label:lower():find("ground") then
+                        SaveSelectedGroundMounts()
+                        -- print("Selected ground mounts saved.")
+                    end
+                end)
             end
             return box
         end
@@ -183,6 +193,12 @@ function CYRandomMountOptions.CreateOptionsPanel()
             -- Refresh available mounts
             local availableMounts = {}
             local mountIDs = C_MountJournal.GetMountIDs()
+            local availableMountsCount = #mountIDs
+            if availableMountsCount == 0 then
+                print("No mounts available. Please check your mount collection.")
+                return
+            end
+            CYRandomMountDB.availableMountsCount = availableMountsCount
             for i = 1, #mountIDs do
                 local mountID = mountIDs[i]
                 local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
@@ -221,7 +237,13 @@ function CYRandomMountOptions.CreateOptionsPanel()
             flyingBox:SetPoint("TOPLEFT", updateMacroRadio2, "BOTTOMLEFT", 0, -24)
             groundBox = CreateMountBox(groundMounts, panel, "Mounts for Ground only area")
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
-            LoadSettings()
+
+            if CYRandomMountDB.availableMountsCount ~= 0 then
+                -- print("Available mounts count: " .. CYRandomMountDB.availableMountsCount)
+                LoadSettings()
+            else
+                -- print("No mounts available. Please check your mount collection.")
+            end            
         end
 
 
@@ -230,14 +252,14 @@ function CYRandomMountOptions.CreateOptionsPanel()
 
         SLASH_CYRandomMount1 = "/cyrandommount"
         SlashCmdList["CYRandomMount"] = function()
-            Settings.OpenToCategory("CYRandomMount")
+            C_Timer.After(0.1, function()
+                Settings.OpenToCategory(category)
+            end)
         end
 
         UpdateMountListAndSettings()
-        LoadSettings()
 
         panel:HookScript("OnShow", UpdateMountListAndSettings)
-        panel:HookScript("OnHide", SaveSelectedMounts)
     else
         panel = CreateFrame("Frame", "cyrandommountOptionsPanel", UIParent)
         panel.name = "CYRandomMount"
@@ -248,7 +270,10 @@ function CYRandomMountOptions.CreateOptionsPanel()
         SLASH_CYRandomMount1 = "/cyrandommount"
         SlashCmdList["CYRandomMount"] = function()
             InterfaceOptionsFrame_OpenToCategory(panel)
-            LoadSettings()
         end
+        UpdateMountListAndSettings()
+        if CYRandomMountDB.availableMountsCount ~= 0 then
+            LoadSettings()
+        end        
     end
 end
