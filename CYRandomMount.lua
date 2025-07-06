@@ -120,7 +120,7 @@ local function UpdateMountMacroByZone()
 
     -- Check if area is flyable
     local isFlyable = IsFlyableArea and IsFlyableArea() or false
-    print("CYRandomMount: isFlyable = ", isFlyable)
+    -- print("CYRandomMount: isFlyable = ", isFlyable)
     local macroIndex = nil
     for i = 1, GetNumMacros(false) do
         local name = GetMacroInfo(i)
