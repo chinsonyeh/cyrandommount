@@ -17,13 +17,13 @@ CYRandomMountOptions.UpdateMacroMode = function() return UpdateMacroMode end
 CYRandomMountOptions.SetUpdateMacroMode = function(v) UpdateMacroMode = v end
 
 local function InitCYRandomMountDB()
-    if not CYRandomMountDB then
+    if type(CYRandomMountDB) ~= "table" then
         CYRandomMountDB = {}
     end
-    if not CYRandomMountDB.FlyingMounts then
+    if type(CYRandomMountDB.FlyingMounts) ~= "table" then
         CYRandomMountDB.FlyingMounts = {}
     end
-    if not CYRandomMountDB.GroundMounts then
+    if type(CYRandomMountDB.GroundMounts) ~= "table" then
         CYRandomMountDB.GroundMounts = {}
     end
     -- print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
@@ -60,8 +60,8 @@ local function LoadSettings()
     end
     if CYRandomMountDB.UpdateMacroMode then
         UpdateMacroMode = CYRandomMountDB.UpdateMacroMode
-        if updateMacroRadio1 then updateMacroRadio1:SetChecked(UpdateMacroMode == 1) end
-        if updateMacroRadio2 then updateMacroRadio2:SetChecked(UpdateMacroMode == 2) end
+        if panel.updateMacroRadio1 then panel.updateMacroRadio1:SetChecked(UpdateMacroMode == 1) end
+        if panel.updateMacroRadio2 then panel.updateMacroRadio2:SetChecked(UpdateMacroMode == 2) end
     end
     if CYRandomMountDB.FlyingMounts and flyingBox and flyingBox.checks then
         local selected = {}
@@ -81,6 +81,7 @@ end
 
 function CYRandomMountOptions.CreateOptionsPanel()
     InitCYRandomMountDB()
+    local updateMacroRadio1, updateMacroRadio2
     if Settings and Settings.RegisterCanvasLayoutCategory then
         panel = CreateFrame("Frame", nil, nil)
         panel.name = "CYRandomMount"
@@ -139,11 +140,16 @@ function CYRandomMountOptions.CreateOptionsPanel()
             CYRandomMountDB.UpdateMacroMode = UpdateMacroMode
         end)
 
+        -- Store radio buttons for LoadSettings
+        panel.updateMacroRadio1 = updateMacroRadio1
+        panel.updateMacroRadio2 = updateMacroRadio2
+
         -- Decide if ScrollFrame is needed
         local function CreateMountBox(mounts, parent, label)
             local box, scrollFrame, scrollChild, title
             box = CreateFrame("Frame", nil, parent)
-            box:SetSize(220, (#mounts > 20) and 360 or math.max(32, #mounts * 24))
+            local boxHeight = (#mounts > 20) and 360 or math.max(56, #mounts * 24 + 24)
+            box:SetSize(220, boxHeight)
             title = box:CreateFontString(nil, "ARTWORK", "GameFontNormal")
             title:SetPoint("TOPLEFT", 4, -4)
             title:SetText(label)
@@ -158,6 +164,12 @@ function CYRandomMountOptions.CreateOptionsPanel()
             box.bg = box:CreateTexture(nil, "BACKGROUND")
             box.bg:SetAllPoints()
             box.bg:SetColorTexture(0,0,0,0.2)
+            -- 清理舊的 checks
+            if box.checks then
+                for _, check in ipairs(box.checks) do
+                    if check and check.Destroy then check:Destroy() end
+                end
+            end
             box.checks = {}
             for i, mount in ipairs(mounts) do
                 local parentFrame = scrollChild or box
@@ -245,7 +257,6 @@ function CYRandomMountOptions.CreateOptionsPanel()
                 -- print("No mounts available. Please check your mount collection.")
             end            
         end
-
 
         local category = Settings.RegisterCanvasLayoutCategory(panel, "CYRandomMount")
         Settings.RegisterAddOnCategory(category)

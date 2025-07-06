@@ -1,3 +1,3 @@
-v1.1.1
+v1.1.2
 
-1. Try to fix the issue where all available mounts are not corectly loadded.
+1. Optimized code to avoid potential errors.
