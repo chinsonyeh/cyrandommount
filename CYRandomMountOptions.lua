@@ -214,11 +214,12 @@ function CYRandomMountOptions.CreateOptionsPanel()
             for i = 1, #mountIDs do
                 local mountID = mountIDs[i]
                 local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
-                if isCollected and name and icon and (not hideOnChar) and isUsable then
+                if isCollected and name and icon and (not hideOnChar) then
                     table.insert(availableMounts, {mountID = mountID, name = name, icon = icon})
                 end
             end
             local flyingMounts, groundMounts = {}, {}
+            -- print("CYRandomMount: Found " .. #availableMounts .. " available mounts.")
             for _, mount in ipairs(availableMounts) do
                 local mountTypeID = select(5, C_MountJournal.GetMountInfoExtraByID(mount.mountID))
                 if mountTypeID == 402 or mountTypeID == 269 then
@@ -249,7 +250,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             flyingBox:SetPoint("TOPLEFT", updateMacroRadio2, "BOTTOMLEFT", 0, -24)
             groundBox = CreateMountBox(groundMounts, panel, "Mounts for Ground only area")
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
-
+            -- print("CYRandomMount: Available mounts updated. Flying: " .. #flyingMounts .. ", Ground: " .. #groundMounts)
             if CYRandomMountDB.availableMountsCount ~= 0 then
                 -- print("Available mounts count: " .. CYRandomMountDB.availableMountsCount)
                 LoadSettings()

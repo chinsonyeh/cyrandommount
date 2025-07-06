@@ -144,24 +144,20 @@ local function UpdateMountMacroByZone()
                     return
                 end
             end
-            -- Fallback: 沒有可用地面坐騎
-            macroBodyStr = macroPrefix.."-- No available ground mount\n/script print('CYRandomMount: No available ground mount!')"
-            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
-            return
-        else
-            local mountID = GetRandomSelectedFlyingMount()
-            if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
-                local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
-                name = SanitizeMacroName(name)
-                macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
-                SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
-                return
-            end     
-            -- Fallback: 沒有可用飛行坐騎
-            macroBodyStr = macroPrefix.."-- No available flying mount\n/script print('CYRandomMount: No available flying mount!')"
-            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
-            return                  
         end
+
+        local mountID = GetRandomSelectedFlyingMount()
+        if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
+            local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
+            name = SanitizeMacroName(name)
+            macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+            SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
+            return
+        end     
+        -- Fallback: 沒有可用飛行坐騎
+        macroBodyStr = macroPrefix.."-- No available flying mount\n/script print('CYRandomMount: No available flying mount!')"
+        SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
+        return                  
 
     end
 end

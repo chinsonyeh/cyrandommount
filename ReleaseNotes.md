@@ -1,3 +1,4 @@
-v1.1.4
+v1.1.5
 
-1. Bug Fix: When logging in while indoors or in a non-mountable area, the generated macro could not be used even after moving to a mountable area, making it impossible to recover.
+1. Bug Fix: When logging in while indoors or in a non-mountable area,  
+   the option pannel can not retrieve correct available mounts.
