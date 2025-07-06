@@ -15,8 +15,8 @@ $githubTag = $tag
 
 # Confirm tag
 Write-Host "Current tag is: $githubTag"
-$confirm = Read-Host "Is this tag correct? (Y/N)"
-if ($confirm -ne "Y" -and $confirm -ne "y") {
+$confirm = Read-Host "Is this tag correct? (Y/N) [Y]"
+if ($confirm -and $confirm -ne "Y" -and $confirm -ne "y") {
     $githubTag = Read-Host "Please enter the correct tag name"
 }
 
