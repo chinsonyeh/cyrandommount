@@ -104,9 +104,15 @@ local function GetRandomSelectedGroundMount()
     return nil
 end
 
-local lastZoneType = nil
-local lastIsFlyable = nil
+local function SafeEditMacro(...)
+    local ok = pcall(EditMacro, ...)
+    if not ok then
+        print("CYRandomMount: EditMacro failed. Please check if the macro exists or if the content is too long.")
+    end
+end
+
 local function UpdateMountMacroByZone()
+    -- print("CYRandomMount: Updating mount macro by zone...")
     -- Pause auto-update if player is editing macro
     if MacroFrame and MacroFrame:IsShown() then
         return
@@ -114,7 +120,7 @@ local function UpdateMountMacroByZone()
 
     -- Check if area is flyable
     local isFlyable = IsFlyableArea and IsFlyableArea() or false
-    lastIsFlyable = isFlyable
+    print("CYRandomMount: isFlyable = ", isFlyable)
     local macroIndex = nil
     for i = 1, GetNumMacros(false) do
         local name = GetMacroInfo(i)
@@ -127,39 +133,36 @@ local function UpdateMountMacroByZone()
         -- Only run CYRandomMount_InstantUpdate() when mounted
         local macroPrefix = "#showtooltip\n/run if IsMounted() then CYRandomMount_InstantUpdate() end\n"
         local macroBodyStr = nil
-        if isFlyable then
+        if isFlyable == false then
+            local mountID = GetRandomSelectedGroundMount()
+            if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
+                local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
+                if isUsable == true then
+                    name = SanitizeMacroName(name)
+                    macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+                    SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
+                    return
+                end
+            end
+            -- Fallback: 沒有可用地面坐騎
+            macroBodyStr = macroPrefix.."-- No available ground mount\n/script print('CYRandomMount: No available ground mount!')"
+            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
+            return
+        else
             local mountID = GetRandomSelectedFlyingMount()
             if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
                 local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
                 name = SanitizeMacroName(name)
-                if isUsable then
-                    macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
-                    EditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
-                else
-                    macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Flying Mount"
-                    EditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
-                end
-            else
-                macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Flying Mount"
-                EditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
-            end
-        else
-            local mountID = GetRandomSelectedGroundMount()
-            if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
-                local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
-                name = SanitizeMacroName(name)
-                if isUsable then
-                    macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
-                    EditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
-                else
-                    macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Ground Mount"
-                    EditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
-                end
-            else
-                macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] Ground Mount"
-                EditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
-            end            
+                macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+                SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
+                return
+            end     
+            -- Fallback: 沒有可用飛行坐騎
+            macroBodyStr = macroPrefix.."-- No available flying mount\n/script print('CYRandomMount: No available flying mount!')"
+            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
+            return                  
         end
+
     end
 end
 
