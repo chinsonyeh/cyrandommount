@@ -1,25 +1,36 @@
+param(
+    [string]$tag
+)
+
 # Replace these variables with your values
 $githubRepo = "chinsonyeh/cyrandommount"
-$githubTag = "v1.0.0"
 
-# 確認 tag
+# Check if -tag parameter is provided
+if (-not $tag) {
+    Write-Host "Usage: .\prepare_for_curseforge.ps1 -tag v1.1.4"
+    exit 1
+}
+
+$githubTag = $tag
+
+# Confirm tag
 Write-Host "Current tag is: $githubTag"
 $confirm = Read-Host "Is this tag correct? (Y/N)"
 if ($confirm -ne "Y" -and $confirm -ne "y") {
     $githubTag = Read-Host "Please enter the correct tag name"
 }
 
-# 直接組成公開下載網址
+# Directly compose the public download URL
 $zipUrl = "https://github.com/$githubRepo/archive/refs/tags/$githubTag.zip"
 $zipFile = "$githubTag.zip"
 Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
 
-# 解壓縮到暫存資料夾
+# Extract to temporary folder
 $tempDir = Join-Path $PWD "temp_extract"
 if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
 Expand-Archive -Path $zipFile -DestinationPath $tempDir
 
-# 找到 cyrandommount-* 目錄
+# Find cyrandommount-* directory
 $srcDir = Get-ChildItem -Path $tempDir -Directory | Where-Object { $_.Name -like "cyrandommount-*" } | Select-Object -First 1
 
 if ($null -eq $srcDir) {
@@ -27,12 +38,12 @@ if ($null -eq $srcDir) {
     exit 1
 }
 
-# 建立 $destDir 名稱為 CYRandomMount
+# Create $destDir named CYRandomMount
 $destDir = Join-Path $PWD "CYRandomMount"
 if (Test-Path $destDir) { Remove-Item $destDir -Recurse -Force }
 if (!(Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-Null }  
 
-# 複製檔案到 $destDir，排除 .gitignore 和 sync.ps1
+# Copy files to $destDir, excluding .gitignore and sync.ps1
 Get-ChildItem -Path $srcDir.FullName -Recurse -File | Where-Object {
     $_.Name -notin @('.gitignore', 'sync.ps1')
 } | ForEach-Object {
@@ -43,19 +54,19 @@ Get-ChildItem -Path $srcDir.FullName -Recurse -File | Where-Object {
     Write-Host "Copied: $($_.Name)"
 }
 
-# 刪除暫存資料夾
+# Delete temporary folder
 Remove-Item $tempDir -Recurse -Force
 
-# 刪除原始 zip 檔案
+# Delete original zip file
 Remove-Item $zipFile -Force
 
-# 將CYRandomMount資料夾壓縮成 zip，檔名包含版本號
+# Compress CYRandomMount folder into zip, filename includes version
 $zipOutput = "CYRandomMount-$githubTag.zip"
 if (Test-Path $zipOutput) { Remove-Item $zipOutput -Force }
 Compress-Archive -Path $destDir -DestinationPath $zipOutput
 Write-Host "Created: $(Split-Path $zipOutput -Leaf)"
 
-# 刪除 CYRandomMount 資料夾
+# Delete CYRandomMount folder
 Remove-Item $destDir -Recurse -Force
 
 
