@@ -1,4 +1,4 @@
-v1.1.5
+v1.2.0
 
-1. Bug Fix: When logging in while indoors or in a non-mountable area,  
-   the option pannel can not retrieve correct available mounts.
+1. Add feature: cast G99 in Undermine.
+2. Bug fix: cannot cast Delver's Dirigible and Delver's Gob-Trotter
