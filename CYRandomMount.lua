@@ -11,6 +11,8 @@ local isAddonLoaded = false
 local isPlayerLoggedIn = false
 local optionsLoaded = false
 
+local ShowDebug = false -- Set to true to enable debug messages
+
 local function TryLoadOptions()
     if isAddonLoaded and isPlayerLoggedIn and not optionsLoaded then
         if CYRandomMountOptions and CYRandomMountOptions.CreateOptionsPanel then
@@ -57,6 +59,9 @@ local function CreateMountMacro()
     end
 end
 
+if ShowDebug then
+    print("CYRandomMount: Creating PLAYER_LOGIN event...")
+end
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(self, event)
@@ -111,11 +116,64 @@ local function SafeEditMacro(...)
     end
 end
 
+if ShowDebug then
+    print("CYRandomMount: Creating UpdateMountMacroByZone function...")
+end
+
 local function UpdateMountMacroByZone()
-    -- print("CYRandomMount: Updating mount macro by zone...")
+    if ShowDebug then
+        print("CYRandomMount: Updating mount macro by zone...")
+    end
     -- Pause auto-update if player is editing macro
     if MacroFrame and MacroFrame:IsShown() then
         return
+    end
+
+    -- Get zone ID
+    local zoneID = C_Map.GetBestMapForUnit("player")
+    if ShowDebug then
+        print("CYRandomMount: Current zone ID:", zoneID)
+    end
+
+    -- If zone ID is 2346 (Undermine), use specific mount
+    if zoneID == 2346 then
+        local Locale = GetLocale()
+        local mountName = "G-99 Breakneck"
+        -- Set mountName based on locale
+        if Locale == "zhTW" then
+            mountName = "斷頸者G-99" -- Traditional Chinese
+        elseif Locale == "zhCN" then
+            mountName = "G-99疾飙飞车" -- Simplified Chinese
+        elseif Locale == "enUS" or Locale == "enGB" then
+            mountName = "G-99 Breakneck" -- English (example)
+        elseif Locale == "frFR" then
+            mountName = "G-99 Ventraterre" -- French (example)
+        elseif Locale == "koKR" then
+            mountName = "G-99 광폭질주차" -- Korean (example)
+        elseif Locale == "deDE" then
+            mountName = "99-G-Genickbrecher" -- German (example)
+        elseif Locale == "esES" or Locale == "esMX" then
+            mountName = "Rompecuellos G-99" -- Spanish (example)
+        elseif Locale == "ptBR" then
+            mountName = "Pé-na-Tábua G-99" -- Brazilian Portuguese (example)
+        elseif Locale == "ruRU" then
+            mountName = "Стремглав G-99" -- Russian (example)
+        else
+            mountName = "斷頸者G-99" -- Default fallback
+        end
+        if ShowDebug then
+            print("CYRandomMount: In Undermine, using specific mount...")
+            print("Current WoW locale:", Locale)
+            print("CYRandomMount: Using mount:", mountName)
+        end
+
+        local macroPrefix = "#showtooltip\n/run if IsMounted() then CYRandomMount_InstantUpdate() end\n"
+        local macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..mountName
+        local macroIndex = GetMacroIndexByName(macroName)
+        if macroIndex then
+            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
+            return
+        end
     end
 
     -- Check if area is flyable
@@ -138,8 +196,11 @@ local function UpdateMountMacroByZone()
             if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
                 local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
                 if isUsable == true then
-                    name = SanitizeMacroName(name)
-                    macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+                    -- Use /cast [nomounted] <mountID> for macro
+                    if ShowDebug then
+                        print("CYRandomMount: Updated macro with ground mount ID: " .. tostring(mountID))
+                    end
+                    macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID("..mountID..") end\n"
                     SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
                     return
                 end
@@ -149,12 +210,15 @@ local function UpdateMountMacroByZone()
         local mountID = GetRandomSelectedFlyingMount()
         if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
             local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
-            name = SanitizeMacroName(name)
-            macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] "..name
+            -- Use /cast [nomounted] <mountID> for macro
+            macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID("..mountID..") end\n"
             SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
+            if ShowDebug then
+                print("CYRandomMount: Updated macro with flying mount ID: " .. tostring(mountID))
+            end
             return
         end     
-        -- Fallback: 沒有可用飛行坐騎
+        -- Fallback: No available flying mount
         macroBodyStr = macroPrefix.."-- No available flying mount\n/script print('CYRandomMount: No available flying mount!')"
         SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
         return                  
