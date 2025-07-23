@@ -3,6 +3,7 @@
 local panel, refreshTimeSlider, refreshTimeText, flyingBox, groundBox
 local RefreshTime = 10
 local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
+local ShowDebug = true -- Set to true to enable debug messages
 
 -- Expose variables to main program
 CYRandomMountOptions = {}
@@ -26,7 +27,9 @@ local function InitCYRandomMountDB()
     if type(CYRandomMountDB.GroundMounts) ~= "table" then
         CYRandomMountDB.GroundMounts = {}
     end
-    -- print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
+    if ShowDebug then
+        print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
+    end
 end
 
 local function SaveSelectedFlyingMounts()
@@ -83,6 +86,10 @@ function CYRandomMountOptions.CreateOptionsPanel()
     InitCYRandomMountDB()
     local updateMacroRadio1, updateMacroRadio2
     if Settings and Settings.RegisterCanvasLayoutCategory then
+        if ShowDebug then
+            print("CYRandomMount: Creating options panel with Settings API...")
+        end
+
         panel = CreateFrame("Frame", nil, nil)
         panel.name = "CYRandomMount"
         local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -250,12 +257,18 @@ function CYRandomMountOptions.CreateOptionsPanel()
             flyingBox:SetPoint("TOPLEFT", updateMacroRadio2, "BOTTOMLEFT", 0, -24)
             groundBox = CreateMountBox(groundMounts, panel, "Mounts for Ground only area")
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 32, 0)
-            -- print("CYRandomMount: Available mounts updated. Flying: " .. #flyingMounts .. ", Ground: " .. #groundMounts)
+            if ShowDebug then
+                print("CYRandomMount: Available mounts updated. Flying: " .. #flyingMounts .. ", Ground: " .. #groundMounts)
+            end
             if CYRandomMountDB.availableMountsCount ~= 0 then
-                -- print("Available mounts count: " .. CYRandomMountDB.availableMountsCount)
+                if ShowDebug then
+                    print("CYRandomMount: Available mounts count: " .. CYRandomMountDB.availableMountsCount)
+                end
                 LoadSettings()
             else
-                -- print("No mounts available. Please check your mount collection.")
+                if ShowDebug then
+                    print("CYRandomMount: No mounts available. Please check your mount collection.")
+                end
             end            
         end
 
