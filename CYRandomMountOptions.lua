@@ -3,7 +3,7 @@
 local panel, refreshTimeSlider, refreshTimeText, flyingBox, groundBox
 local RefreshTime = 10
 local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
-local ShowDebug = true -- Set to true to enable debug messages
+local ShowDebug = false -- Set to true to enable debug messages
 
 -- Expose variables to main program
 CYRandomMountOptions = {}
