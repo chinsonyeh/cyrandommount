@@ -1,3 +1,3 @@
-v1.2.1
+v1.2.2
 
-1. Bug fix: When the selected list contains mounts that the current character cannot use, it may cause Macro errors or select an incorrect mount type.
+1. Bug fix: Ensure the macro is created correctly and not updated when the area is not mountable.
