@@ -82,7 +82,17 @@ local function GetRandomSelectedFlyingMount()
     if flyingBox and flyingBox.checks then
         for _, check in ipairs(flyingBox.checks) do
             if check:GetChecked() then
-                table.insert(selected, check.mountID)
+                if C_MountJournal and C_MountJournal.GetMountInfoByID then
+                    local _, _, _, _, isUsable = C_MountJournal.GetMountInfoByID(check.mountID)
+                    if isUsable then
+                        table.insert(selected, check.mountID)
+                    else
+                        if ShowDebug then
+                            print("CYRandomMount: Flying mount ID " .. tostring(check.mountID) .. " is not usable.")
+                        end
+                    end
+                end
+                -- print("CYRandomMount: Flying mount name = ", check.mountName, " ID = ", check.mountID)
             end
         end
     end
@@ -99,7 +109,17 @@ local function GetRandomSelectedGroundMount()
     if groundBox and groundBox.checks then
         for _, check in ipairs(groundBox.checks) do
             if check:GetChecked() then
-                table.insert(selected, check.mountID)
+                if C_MountJournal and C_MountJournal.GetMountInfoByID then
+                    local _, _, _, _, isUsable = C_MountJournal.GetMountInfoByID(check.mountID)
+                    if isUsable then
+                        table.insert(selected, check.mountID)
+                    else
+                        if ShowDebug then
+                            print("CYRandomMount: Ground mount ID " .. tostring(check.mountID) .. " is not usable.")
+                        end
+                    end
+                end
+                -- print("CYRandomMount: ground mount name = ", check.mountName, " ID = ", check.mountID)
             end
         end
     end
@@ -192,6 +212,9 @@ local function UpdateMountMacroByZone()
         local macroPrefix = "#showtooltip\n/run if IsMounted() then CYRandomMount_InstantUpdate() end\n"
         local macroBodyStr = nil
         if isFlyable == false then
+            if ShowDebug then
+                print("CYRandomMount: Current zone is not flyable, using ground mount...")
+            end
             local mountID = GetRandomSelectedGroundMount()
             if mountID and C_MountJournal and C_MountJournal.GetMountInfoByID then
                 local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
@@ -203,7 +226,15 @@ local function UpdateMountMacroByZone()
                     macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID("..mountID..") end\n"
                     SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
                     return
+                else
+                    if ShowDebug then
+                        print("CYRandomMount: Ground mount ID " .. tostring(mountID) .. " is not usable.")  
+                    end
                 end
+            end
+        else
+            if ShowDebug then
+                print("CYRandomMount: Current zone is flyable, using flying mount...")
             end
         end
 
@@ -219,7 +250,7 @@ local function UpdateMountMacroByZone()
             return
         end     
         -- Fallback: No available flying mount
-        macroBodyStr = macroPrefix.."-- No available flying mount\n/script print('CYRandomMount: No available flying mount!')"
+        macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n/script print('CYRandomMount: No available selected flying mount, use default one !')"
         SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
         return                  
 

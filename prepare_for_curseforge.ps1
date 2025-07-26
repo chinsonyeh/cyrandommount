@@ -45,7 +45,7 @@ if (!(Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-N
 
 # Copy files to $destDir, excluding .gitignore and sync.ps1
 Get-ChildItem -Path $srcDir.FullName -Recurse -File | Where-Object {
-    $_.Name -notin @('.gitignore', 'sync.ps1', 'prepare_for_curseforge.ps1', 'check_version.ps1') -and $_.FullName -notmatch '\.github(\\|\/|$)'
+    ($_.Extension -in @('.lua', '.toc') -or $_.Name -in @('README.md', 'ReleaseNotes.md'))
 } | ForEach-Object {
     $targetPath = Join-Path $destDir $_.FullName.Substring($srcDir.FullName.Length + 1)
     $targetDir = Split-Path $targetPath -Parent
