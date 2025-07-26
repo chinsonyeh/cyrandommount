@@ -1,4 +1,3 @@
-v1.2.0
+v1.2.1
 
-1. Add feature: cast G99 in Undermine.
-2. Bug fix: cannot cast Delver's Dirigible and Delver's Gob-Trotter
+1. Bug fix: When the selected list contains mounts that the current character cannot use, it may cause Macro errors or select an incorrect mount type.
