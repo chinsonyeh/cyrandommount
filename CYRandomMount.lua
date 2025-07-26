@@ -38,7 +38,7 @@ end)
 -- Auto create CYRandomMount macro
 local macroName = "CYRandomMount"
 local macroIcon = "INV_Misc_QuestionMark"
-local macroBody = "#showtooltip Renewed Proto-Drake\n/cast Renewed Proto-Drake"
+-- local macroBody = "#showtooltip Renewed Proto-Drake\n/cast Renewed Proto-Drake"
 
 -- Ensure MAX_ACCOUNT_MACROS has a value (do not add local)
 MAX_ACCOUNT_MACROS = MAX_ACCOUNT_MACROS or 120
@@ -54,8 +54,23 @@ local function CreateMountMacro()
     -- Create new macro
     if GetNumMacros(false) < MAX_ACCOUNT_MACROS then
         -- Only run CYRandomMount_InstantUpdate() when mounted
-        local macroBodyStr = "#showtooltip\n/run CYRandomMount_InstantUpdate()\n/cast CYRandomMount"
-        CreateMacro(macroName, macroIcon, macroBodyStr, false)
+        local defaultMountID = 1589 -- Renewed Proto-Drake
+        local macroPrefix = "#showtooltip\n/run if IsMounted() then CYRandomMount_InstantUpdate() end\n"
+        local name, _, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(defaultMountID)
+        if isUsable then
+            if ShowDebug then
+                print("CYRandomMount: Creating macro with default mount ID: " .. tostring(defaultMountID))
+            end
+            local macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n')"
+            CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
+        else
+            if ShowDebug then
+                print("CYRandomMount: Default mount ID " .. tostring(defaultMountID) .. " is not usable.")
+            end
+            -- Fallback to a generic macro body
+            local macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] CYRandomMount"
+            CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
+        end
     end
 end
 
@@ -196,6 +211,18 @@ local function UpdateMountMacroByZone()
         end
     end
 
+    -- Check if the area is mountable; if not, do not update macro
+    -- Note: There is no CanPlayerMount API, so we use IsIndoors() and IsResting() as fallback
+    -- Some outdoor areas still do not allow mounting (e.g. certain battlegrounds, special zones)
+    if (IsIndoors and IsIndoors()) or (IsInInstance and IsInInstance()) then
+        if ShowDebug then
+            print("CYRandomMount: IsIndoors() = ", IsIndoors and IsIndoors())
+            print("CYRandomMount: IsInInstance() = ", IsInInstance and IsInInstance())
+            print("CYRandomMount: Area is not mountable (indoors, resting, or instance), skipping macro update.")
+        end
+        return
+    end
+
     -- Check if area is flyable
     local isFlyable = IsFlyableArea and IsFlyableArea() or false
     -- print("CYRandomMount: isFlyable = ", isFlyable)
@@ -250,8 +277,8 @@ local function UpdateMountMacroByZone()
             return
         end     
         -- Fallback: No available flying mount
-        macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n/script print('CYRandomMount: No available selected flying mount, use default one !')"
-        SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
+        -- macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n/script print('CYRandomMount: No available selected flying mount, use default one !')"
+        -- SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
         return                  
 
     end
