@@ -214,11 +214,10 @@ local function UpdateMountMacroByZone()
     -- Check if the area is mountable; if not, do not update macro
     -- Note: There is no CanPlayerMount API, so we use IsIndoors() and IsResting() as fallback
     -- Some outdoor areas still do not allow mounting (e.g. certain battlegrounds, special zones)
-    if (IsIndoors and IsIndoors()) or (IsInInstance and IsInInstance()) then
+    if (IsIndoors and IsIndoors()) then
         if ShowDebug then
             print("CYRandomMount: IsIndoors() = ", IsIndoors and IsIndoors())
-            print("CYRandomMount: IsInInstance() = ", IsInInstance and IsInInstance())
-            print("CYRandomMount: Area is not mountable (indoors, resting, or instance), skipping macro update.")
+            print("CYRandomMount: Area is not mountable (indoors), skipping macro update.")
         end
         return
     end
