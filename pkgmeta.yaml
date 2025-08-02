@@ -1,0 +1,13 @@
+package-as: CYRandomMount
+
+ignore:
+    - pkgmeta.yaml # ignore the pkgmeta.yaml file
+    - prepare_for_curseforge.ps1  # ignore a specific file
+    - sync.ps1 # ignore another specific file
+    - .github # ignore the entire .github directory
+    - .gitignore # ignore the .gitignore file
+    - check_version.ps1 # ignore the check_version script
+
+manual-changelog:
+    filename: ReleaseNotes.md
+    markup-type: markdown
