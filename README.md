@@ -4,19 +4,18 @@ CYRandomMount is a World of Warcraft addon that automatically updates a macro to
 
 ## Features
 
-- **Automatic Macro Update:** Creates and updates a macro named `CYRandomMount` to summon a random selected mount suitable for your current area (flying or ground).  
+- **Automatic Macro Update:** Creates and updates a macro named `CYRandomMount` to summon a random selected mount suitable for your current area (flying or ground or Undermine).  
   **Macro Update Modes:**
    - **Mode 1:** The macro will update and select a new random mount every time you press the macro button.
    - **Mode 2:** The macro will update and select a new random mount automatically at a fixed interval (Refresh Time).
 - **Favorite Mount Selection:** Choose which flying and ground mounts to include in the random selection from your collected mounts.
 - **Custom Refresh Interval:** Set how often (in seconds) the macro updates to reflect your current zone's flyability.
 - **Settings Panel:** Easily configure your preferences through the in-game settings interface.
-- **Legacy Support:** Compatible with both the new and old WoW settings APIs.
 
 ## How to Use
 
 1. **Install the Addon:**
-   - Place the `CYRandomMount` folder in your `Interface/AddOns` directory.
+   - Place the `CYRandomMount` folder in your `path_to\World of Warcraft\_retail_\Interface\AddOns` directory.
 
 2. **In-Game Setup:**
    - Type `/cyrandommount` in chat to open the settings panel.

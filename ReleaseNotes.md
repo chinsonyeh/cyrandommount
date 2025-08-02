@@ -1,4 +1,3 @@
-v1.2.0
+v1.2.3
 
-1. Add feature: cast G99 in Undermine.
-2. Bug fix: cannot cast Delver's Dirigible and Delver's Gob-Trotter
+1. Bug Fix: Macro not correctly function in BattleGround.
