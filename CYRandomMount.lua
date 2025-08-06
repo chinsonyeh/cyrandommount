@@ -5,6 +5,7 @@ local refreshTimeText
 local flyingBox
 local groundBox
 local RefreshTime = 10
+local DefaultMacroName = "CYRandomMount"
 
 -- State flags
 local isAddonLoaded = false
@@ -15,6 +16,26 @@ local ShowDebug = false -- Set to true to enable debug messages
 
 local function TryLoadOptions()
     if isAddonLoaded and isPlayerLoggedIn and not optionsLoaded then
+        -- Check CYRandomMountDB.macroName and handle macro name change
+        local db = _G.CYRandomMountDB
+        if db and db.macroName and db.macroName ~= DefaultMacroName then
+            -- Try to delete the old macro if it exists
+            local oldMacroIndex = GetMacroIndexByName(db.macroName)
+            if oldMacroIndex then
+                local ok = pcall(DeleteMacro, oldMacroIndex)
+                if ok and ShowDebug then
+                    print("CYRandomMount: Deleted old macro '" .. db.macroName .. "'.")
+                elseif ShowDebug then
+                    print("CYRandomMount: Failed to delete macro '" .. db.macroName .. "'.")
+                end
+            end
+        end
+        -- Reset macroName to DefaultMacroName
+        db.macroName = DefaultMacroName
+        if ShowDebug then
+            print("CYRandomMount: Reset CYRandomMountDB.macroName to DefaultMacroName.")
+        end        
+    
         if CYRandomMountOptions and CYRandomMountOptions.CreateOptionsPanel then
             CYRandomMountOptions.CreateOptionsPanel()
             optionsLoaded = true
@@ -36,19 +57,24 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
 end)
 
 -- Auto create CYRandomMount macro
-local macroName = "CYRandomMount"
+local macroName = DefaultMacroName
 local macroIcon = "INV_Misc_QuestionMark"
 -- local macroBody = "#showtooltip Renewed Proto-Drake\n/cast Renewed Proto-Drake"
 
 -- Ensure MAX_ACCOUNT_MACROS has a value (do not add local)
 MAX_ACCOUNT_MACROS = MAX_ACCOUNT_MACROS or 120
 
-local function CreateMountMacro()
+local function CreateMountMacro(force)
     -- Check if macro already exists
-    for i = 1, GetNumMacros(false) do
-        local name = GetMacroInfo(i)
-        if name == macroName then
-            return -- Already exists, do not create again
+    if not force then
+        for i = 1, GetNumMacros(false) do
+            local name = GetMacroInfo(i)
+            if name == macroName then
+                if ShowDebug then
+                    print("CYRandomMount: Macro '" .. macroName .. "' already exists, skipping creation.")
+                end
+                return -- Already exists, do not create again
+            end
         end
     end
     -- Create new macro
@@ -62,14 +88,28 @@ local function CreateMountMacro()
                 print("CYRandomMount: Creating macro with default mount ID: " .. tostring(defaultMountID))
             end
             local macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n')"
-            CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
+            local macroIndex = CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
+            if not macroIndex or macroIndex == 0 then
+                print("CYRandomMount: Failed to create macro '" .. macroName .. "'. Please check macro limits or permissions.")
+            else
+                if ShowDebug then
+                    print("CYRandomMount: Macro '" .. macroName .. "' created successfully.")
+                end
+            end
         else
             if ShowDebug then
                 print("CYRandomMount: Default mount ID " .. tostring(defaultMountID) .. " is not usable.")
             end
             -- Fallback to a generic macro body
             local macroBodyStr = macroPrefix.."/dismount [mounted]\n/cast [nomounted] CYRandomMount"
-            CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
+            local macroIndex = CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
+            if not macroIndex or macroIndex == 0 then
+                print("CYRandomMount: Failed to create macro '" .. macroName .. "'. Please check macro limits or permissions.")
+            else
+                if ShowDebug then
+                    print("CYRandomMount: Macro '" .. macroName .. "' created successfully.")
+                end
+            end
         end
     end
 end

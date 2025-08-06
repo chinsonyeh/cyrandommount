@@ -4,6 +4,7 @@ local panel, refreshTimeSlider, refreshTimeText, flyingBox, groundBox
 local RefreshTime = 10
 local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
 local ShowDebug = false -- Set to true to enable debug messages
+local macroName = "CYRandomMount"
 
 -- Expose variables to main program
 CYRandomMountOptions = {}
@@ -27,8 +28,15 @@ local function InitCYRandomMountDB()
     if type(CYRandomMountDB.GroundMounts) ~= "table" then
         CYRandomMountDB.GroundMounts = {}
     end
+    -- Check if CYRandomMountDB.macroName exists, and set macroName accordingly
+    if CYRandomMountDB.macroName and type(CYRandomMountDB.macroName) == "string" and CYRandomMountDB.macroName ~= "" then
+        macroName = CYRandomMountDB.macroName
+        if ShowDebug then
+            print("CYRandomMountDB.macroName found:", macroName)
+        end
+    end
     if ShowDebug then
-        print("CYRandomMountDB:", #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
+        print("CYRandomMountDB:", CYRandomMountDB.macroName, #CYRandomMountDB.FlyingMounts, #CYRandomMountDB.GroundMounts, CYRandomMountDB.RefreshTime)
     end
 end
 
@@ -95,7 +103,21 @@ function CYRandomMountOptions.CreateOptionsPanel()
         local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
         title:SetPoint("TOPLEFT", 16, -16)
         title:SetText("CYRandomMount Settings")
-        
+        -- Create a label for "Reset Macro:"
+        local resetMacroLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        resetMacroLabel:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -32)
+        resetMacroLabel:SetText("Reset Macro:")
+
+        -- Create a "Press" button to the right of the label
+        local resetMacroButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+        resetMacroButton:SetSize(60, 22)
+        resetMacroButton:SetPoint("LEFT", resetMacroLabel, "RIGHT", 8, 0)
+        resetMacroButton:SetText("Press")
+        resetMacroButton:SetScript("OnClick", function()
+            -- Add your macro reset logic here
+            CYRandomMount_InstantUpdate()
+            print("CYRandomMount: Macro has been reset.")
+        end)
         local refreshTimeTitle = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         refreshTimeTitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
         refreshTimeTitle:SetText("Refresh Time (sec):")
@@ -127,7 +149,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         updateMacroRadio1:SetPoint("TOPLEFT", updateMacroTitle, "BOTTOMLEFT", 0, -4)
         updateMacroRadio1.text = updateMacroRadio1:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         updateMacroRadio1.text:SetPoint("LEFT", updateMacroRadio1, "RIGHT", 4, 0)
-        updateMacroRadio1.text:SetText("Update macro immediately when random mount is called")
+        updateMacroRadio1.text:SetText("Update macro immediately when random mount is called (Recommended)")
         updateMacroRadio1:SetScript("OnClick", function()
             updateMacroRadio1:SetChecked(true)
             updateMacroRadio2:SetChecked(false)
@@ -139,7 +161,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         updateMacroRadio2:SetPoint("TOPLEFT", updateMacroRadio1, "BOTTOMLEFT", 0, -4)
         updateMacroRadio2.text = updateMacroRadio2:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         updateMacroRadio2.text:SetPoint("LEFT", updateMacroRadio2, "RIGHT", 4, 0)
-        updateMacroRadio2.text:SetText("Only update macro every RefreshTime seconds")
+        updateMacroRadio2.text:SetText("Only update macro every RefreshTime seconds (Legacy, not recommended)")
         updateMacroRadio2:SetScript("OnClick", function()
             updateMacroRadio1:SetChecked(false)
             updateMacroRadio2:SetChecked(true)
@@ -214,7 +236,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             local mountIDs = C_MountJournal.GetMountIDs()
             local availableMountsCount = #mountIDs
             if availableMountsCount == 0 then
-                print("No mounts available. Please check your mount collection.")
+                print("CYRandomMount: No mounts available. Please check your mount collection.")
                 return
             end
             CYRandomMountDB.availableMountsCount = availableMountsCount
@@ -277,8 +299,9 @@ function CYRandomMountOptions.CreateOptionsPanel()
 
         SLASH_CYRandomMount1 = "/cyrandommount"
         SlashCmdList["CYRandomMount"] = function()
+            -- Open the CYRandomMount addon settings page
             C_Timer.After(0.1, function()
-                Settings.OpenToCategory(category)
+                Settings.OpenToCategory(category:GetID())
             end)
         end
 
