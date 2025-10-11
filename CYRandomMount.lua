@@ -18,7 +18,17 @@ local function TryLoadOptions()
     if isAddonLoaded and isPlayerLoggedIn and not optionsLoaded then
         -- Check CYRandomMountDB.macroName and handle macro name change
         local db = _G.CYRandomMountDB
-        if db and db.macroName and db.macroName ~= DefaultMacroName then
+        if not db then
+            -- Initialize CYRandomMountDB if it does not exist
+            _G.CYRandomMountDB = {
+                macroName = DefaultMacroName,
+                RefreshTime = 10
+            }
+            db = _G.CYRandomMountDB
+            if ShowDebug then
+                print("CYRandomMount: Initialized CYRandomMountDB with default values.")
+            end
+        elseif db.macroName and db.macroName ~= DefaultMacroName then
             -- Try to delete the old macro if it exists
             local oldMacroIndex = GetMacroIndexByName(db.macroName)
             if oldMacroIndex then
@@ -29,13 +39,23 @@ local function TryLoadOptions()
                     print("CYRandomMount: Failed to delete macro '" .. db.macroName .. "'.")
                 end
             end
+
+            -- Reset macroName to DefaultMacroName
+            if ShowDebug then
+                print("CYRandomMount: Changing macroName from '" .. db.macroName .. "' to DefaultMacroName...")
+            end
+            -- Add error handling when setting macroName
+            local ok, err = pcall(function()
+                db.macroName = DefaultMacroName
+            end)
+            if not ok then
+                print("CYRandomMount: Failed to reset macroName to DefaultMacroName. Error: " .. tostring(err))
+            end
         end
-        -- Reset macroName to DefaultMacroName
-        db.macroName = DefaultMacroName
+        
         if ShowDebug then
-            print("CYRandomMount: Reset CYRandomMountDB.macroName to DefaultMacroName.")
-        end        
-    
+            print("CYRandomMount: Addon and player are loaded, loading options panel...")
+        end
         if CYRandomMountOptions and CYRandomMountOptions.CreateOptionsPanel then
             CYRandomMountOptions.CreateOptionsPanel()
             optionsLoaded = true
@@ -87,7 +107,7 @@ local function CreateMountMacro(force)
             if ShowDebug then
                 print("CYRandomMount: Creating macro with default mount ID: " .. tostring(defaultMountID))
             end
-            local macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n')"
+            local macroBodyStr = macroPrefix.."/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n"
             local macroIndex = CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
             if not macroIndex or macroIndex == 0 then
                 print("CYRandomMount: Failed to create macro '" .. macroName .. "'. Please check macro limits or permissions.")

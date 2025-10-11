@@ -34,8 +34,27 @@ $tocVersion = Select-String -Path $tocPath -Pattern "^## Version:\s*(.+)$" | For
     $_.Matches[0].Groups[1].Value.Trim()
 }
 
-# Read version from ReleaseNotes.md (assume first line is vX.Y.Z or X.Y.Z)
-$releaseNotesVersion = (Get-Content $releaseNotesPath | Select-Object -First 1) -replace "^v", ""
+# Read version from ReleaseNotes.md
+# Support multiple formats, e.g.:
+#   ## [1.2.5]
+#   v1.2.5
+#   1.2.5
+
+# Try to find a markdown header like: ## [1.2.5]
+$rnMatch = Select-String -Path $releaseNotesPath -Pattern '^\s*##\s*\[v?(\d+\.\d+\.\d+)\]' | Select-Object -First 1
+if ($rnMatch) {
+    $releaseNotesVersion = $rnMatch.Matches[0].Groups[1].Value
+} else {
+    # Fallback: take the first non-empty line and extract a semver-like version
+    $firstLine = Get-Content $releaseNotesPath | Where-Object { $_.Trim() -ne '' } | Select-Object -First 1
+    $m = [regex]::Match($firstLine, 'v?(\d+\.\d+\.\d+)')
+    if ($m.Success) {
+        $releaseNotesVersion = $m.Groups[1].Value
+    } else {
+        Write-Host "Unable to parse version from $releaseNotesPath"
+        exit 1
+    }
+}
 
 if ($tocVersion -ne $version) {
     Write-Host "CYRandomMount.toc version ($tocVersion) does not match tag version ($version)"
