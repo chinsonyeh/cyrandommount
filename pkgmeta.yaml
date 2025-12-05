@@ -5,6 +5,10 @@ ignore:
     - prepare_for_curseforge.ps1  # ignore a specific file
     - sync.ps1 # ignore another specific file
     - .github # ignore the entire .github directory
+    - .gemini # ignore gemini config and outputs
+    - .specify # ignore speckit/specify artifacts
+    - specs # ignore local spec files
+    - .vscode # ignore VS Code workspace settings
     - .gitignore # ignore the .gitignore file
     - check_version.ps1 # ignore the check_version script
 
