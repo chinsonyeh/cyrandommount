@@ -2,7 +2,7 @@
 
 This file documents all notable changes to the CYRandomMount project following [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning](https://semver.org/).
 
-## [2.0.0] - 2025-12-04
+## [2.0.0]
 ### Added
 - Added per-character mount list support with character-specific profiles
 - Added ListMode selection (Character-specific list vs Account-wide shared list)
