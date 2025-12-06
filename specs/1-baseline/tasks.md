@@ -74,22 +74,31 @@
   - 完成日期: v2.0.0
 
 ### 階段 3: 坐騎選擇系統
-- [x] **[CORE] T-008**: 實作 GetRandomSelectedFlyingMount() 函式
+- [x] **[CORE] T-008**: 實作 GetRandomSelectedFlyingMount() 函式（更新：支援排除當前坐騎）
   - 取得當前角色的 ListMode 設定
   - 根據 ListMode 決定讀取來源（角色專屬或 Default 共用清單）
   - 從對應來源的 FlyingMounts 陣列讀取坐騎 ID
   - 驗證坐騎可用性（C_MountJournal.GetMountInfoByID → isUsable）
   - 過濾不可用坐騎
+  - 如果可用坐騎超過1個，排除傳入的 excludeMountID（確保每次都選擇不同坐騎）
   - 使用 math.random() 隨機選擇
-  - 完成日期: v1.0.0
+  - 完成日期: v2.1.0
 
-- [x] **[CORE] T-009**: 實作 GetRandomSelectedGroundMount() 函式
+- [x] **[CORE] T-009**: 實作 GetRandomSelectedGroundMount() 函式（更新：支援排除當前坐騎）
   - 解析 mountTypeID（C_MountJournal.GetMountInfoExtraByID 第 5 個回傳值）
   - 402/269 判定為龍騎術飛行坐騎
   - 241/424 判定為一般飛行坐騎
   - 其他判定為地面坐騎
   - 飛行坐騎也加入地面坐騎清單
-  - 完成日期: v1.0.0
+  - 如果可用坐騎超過1個，排除傳入的 excludeMountID
+  - 完成日期: v2.1.0
+
+- [x] **[CORE] T-009a**: 實作 GetCurrentMountIDFromMacro() 函式
+  - 從巨集內容中提取當前使用的 mountID
+  - 使用正則表達式匹配 "C_MountJournal.SummonByID(<number>)" 模式
+  - 轉換字串為數字型別並回傳
+  - 若無法提取則回傳 nil
+  - 完成日期: v2.1.0
 
 ### 階段 4: 事件與計時器系統
 - [ ] **[CORE] T-011**: 實作區域變更事件監聽
@@ -213,13 +222,16 @@
   - 在設定面板建立後呼叫此函式
   - 完成日期: v1.0.0
 
-- [x] **[DATA] T-025**: 實作舊版巨集名稱遷移邏輯
-  - 檢查 CYRandomMountDB.macroName 是否與預設不同
+- [x] **[DATA] T-025**: 實作舊版巨集名稱遷移邏輯（更新：改進的錯誤處理與 debug logging）
+  - 檢查 CYRandomMountDB.Default.macroName 是否與預設不同
   - 使用 GetMacroIndexByName() 查找舊巨集
-  - 呼叫 DeleteMacro() 刪除舊巨集
+  - 使用 pcall 包裝 DeleteMacro() 並檢查回傳值
+  - 記錄遷移開始訊息（顯示舊名稱和新名稱）
+  - 記錄刪除成功或失敗訊息（包含錯誤原因）
+  - 記錄找不到舊巨集的情況
   - 更新 macroName 為預設值 "CYRandomMount"
-  - 使用 pcall 處理刪除錯誤
-  - 完成日期: v1.1.0
+  - 記錄儲存值重設完成訊息
+  - 完成日期: v2.1.0
 
 ### 階段 7: 特殊區域與多語言
 - [x] **[I18N] T-026**: 實作 Undermine 特殊區域支援
@@ -425,11 +437,11 @@
 - 完成任務: T-017
 - 新增功能：Reset Macro 按鈕
 
-### v1.2.5 (當前版本)
+### v1.2.5
 - 完成任務: T-041 ~ T-044
 - 改進：文件完善、發布流程建立
 
-### v2.0.0 (已完成)
+### v2.0.0
 - 完成任務: T-003, T-007, T-008, T-009, T-013, T-016a, T-021, T-022, T-023, T-024, T-040, T-040a, T-040b
 - 新增功能：清單模式切換（角色獨立/帳號共用）
 - 資料結構更新：支援每個角色獨立設定和 Default 共用設定檔
@@ -437,14 +449,19 @@
 - 新角色預設使用帳號共用清單(ListMode=2)
 - UI 優化：移除重疊列表問題、調整列表高度、移除標題節省空間
 
+### v2.1.0 (當前版本)
+- 完成任務: T-025 (更新), T-008 (更新), T-009 (更新), T-009a (新增)
+- 改進：巨集遷移流程加入完整的 debug logging 和改進的錯誤處理
+- 新增功能：排除當前坐騎的隨機選擇機制，確保每次切換都使用不同坐騎（當可用坐騎 > 1 時）
+
 ## 任務統計
 
-- **總任務數**: 56
-- **已完成**: 48
+- **總任務數**: 57
+- **已完成**: 49
 - **計劃中**: 0
 - **技術債務**: 4
 - **功能擴充建議**: 5
-- **完成率**: 85.7%
+- **完成率**: 86.0%
 
 ## 相依性圖
 

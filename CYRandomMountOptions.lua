@@ -5,6 +5,7 @@ local RefreshTime = 10
 local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
 local ListMode = 1 -- 1: Character specific list, 2: Use shared list
 local ShowDebug = false -- Set to true to enable debug messages
+local macroName = "CYRandomMount"
 
 -- Expose variables to main program
 CYRandomMountOptions = {}

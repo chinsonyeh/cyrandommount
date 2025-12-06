@@ -1,6 +1,8 @@
 # Release Notes
 
-This file documents all notable changes to the CYRandomMount project following [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning](https://semver.org/).
+## [2.0.1]
+### Changed
+- Improved mount variety: When selecting the next random mount, the addon now excludes the currently selected mount from the pool (if more than one mount is available), ensuring you get a different mount each time you summon
 
 ## [2.0.0]
 ### Added

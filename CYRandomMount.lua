@@ -67,12 +67,12 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
 end)
 
 -- Auto create CYRandomMount macro
-local macroName = "CYRandomMount"
+local macroName = DefaultMacroName
 local macroIcon = "INV_Misc_QuestionMark"
 
 MAX_ACCOUNT_MACROS = MAX_ACCOUNT_MACROS or 120
 
-local function CreateMountMacro()
+local function CreateMountMacro(force)
     -- Check if macro already exists
     for i = 1, GetNumMacros(false) do
         local name = GetMacroInfo(i)
@@ -107,7 +107,22 @@ f:SetScript("OnEvent", function(self, event)
     CreateMountMacro()
 end)
 
-local function GetRandomMountFromList(mountList)
+local function GetCurrentMountIDFromMacro()
+    local macroIndex = GetMacroIndexByName(macroName)
+    if not macroIndex then return nil end
+    
+    local _, _, body = GetMacroInfo(macroIndex)
+    if body then
+        -- Extract mountID from pattern: C_MountJournal.SummonByID(<number>)
+        local mountID = body:match("C_MountJournal%.SummonByID%((%d+)%)")
+        if mountID then
+            return tonumber(mountID)
+        end
+    end
+    return nil
+end
+
+local function GetRandomMountFromList(mountList, excludeMountID)
     local usableMounts = {}
     if mountList and #mountList > 0 then
         for _, mountID in ipairs(mountList) do
@@ -119,26 +134,43 @@ local function GetRandomMountFromList(mountList)
             end
         end
     end
+    
+    -- If more than 1 usable mount, exclude current mount to ensure variety
+    if #usableMounts > 1 and excludeMountID then
+        local filtered = {}
+        for _, mountID in ipairs(usableMounts) do
+            if mountID ~= excludeMountID then
+                table.insert(filtered, mountID)
+            end
+        end
+        if #filtered > 0 then
+            usableMounts = filtered
+            if ShowDebug then
+                print("CYRandomMount: Excluded current mount ID " .. tostring(excludeMountID) .. ", " .. #usableMounts .. " mounts remaining")
+            end
+        end
+    end
+    
     if #usableMounts > 0 then
         return usableMounts[math.random(#usableMounts)]
     end
     return nil
 end
 
-local function GetRandomSelectedFlyingMount()
+local function GetRandomSelectedFlyingMount(excludeMountID)
     local charKey = GetCharacterKey()
     if not CYRandomMountDB or not CYRandomMountDB[charKey] then return nil end
     
     local profile = (CYRandomMountDB[charKey].ListMode == 2) and CYRandomMountDB.Default or CYRandomMountDB[charKey]
-    return GetRandomMountFromList(profile.FlyingMounts)
+    return GetRandomMountFromList(profile.FlyingMounts, excludeMountID)
 end
 
-local function GetRandomSelectedGroundMount()
+local function GetRandomSelectedGroundMount(excludeMountID)
     local charKey = GetCharacterKey()
     if not CYRandomMountDB or not CYRandomMountDB[charKey] then return nil end
 
     local profile = (CYRandomMountDB[charKey].ListMode == 2) and CYRandomMountDB.Default or CYRandomMountDB[charKey]
-    return GetRandomMountFromList(profile.GroundMounts)
+    return GetRandomMountFromList(profile.GroundMounts, excludeMountID)
 end
 
 local function SafeEditMacro(...)
@@ -176,19 +208,25 @@ local function UpdateMountMacroByZone()
     local macroIndex = GetMacroIndexByName(macroName)
     if not macroIndex then return end
 
+    -- Get current mount ID to exclude it from next selection
+    local currentMountID = GetCurrentMountIDFromMacro()
+    if ShowDebug and currentMountID then
+        print("CYRandomMount: Current mount ID: " .. tostring(currentMountID))
+    end
+
     local isFlyable = IsFlyableArea and IsFlyableArea() or false
     local mountID
     
     if isFlyable then
         if ShowDebug then print("CYRandomMount: Zone is flyable, getting flying mount.") end
-        mountID = GetRandomSelectedFlyingMount()
+        mountID = GetRandomSelectedFlyingMount(currentMountID)
     else
         if ShowDebug then print("CYRandomMount: Zone is not flyable, getting ground mount.") end
-        mountID = GetRandomSelectedGroundMount()
+        mountID = GetRandomSelectedGroundMount(currentMountID)
     end
 
     if not mountID then -- Fallback if no mount is selected/usable
-        mountID = GetRandomSelectedFlyingMount() -- Try a flying one as they can run on the ground
+        mountID = GetRandomSelectedFlyingMount(currentMountID) -- Try a flying one as they can run on the ground
         if not mountID then 
             if ShowDebug then print("CYRandomMount: No usable selected mounts found.") end
             return 
