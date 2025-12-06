@@ -7,14 +7,19 @@ if (-not (Test-Path $destination)) {
     New-Item -ItemType Directory -Path $destination | Out-Null
 }
 
-# Copy all files and folders except .git and sync.ps1
-Get-ChildItem -Path $source -Exclude '.git', 'sync.ps1' -Force | ForEach-Object {
-    $target = Join-Path $destination $_.Name
-    if ($_.PSIsContainer) {
-        Copy-Item $_.FullName -Destination $target -Recurse -Force
-        Write-Host $_.Name
+# Sync only specific files
+$filesToSync = @(
+    'CYRandomMount.lua',
+    'CYRandomMount.toc',
+    'CYRandomMountOptions.lua'
+)
+
+foreach ($file in $filesToSync) {
+    $sourcePath = Join-Path $source $file
+    if (Test-Path $sourcePath) {
+        Copy-Item $sourcePath -Destination $destination -Force
+        Write-Host $file
     } else {
-        Copy-Item $_.FullName -Destination $destination -Force
-        Write-Host $_.Name
+        Write-Host "Warning: $file not found in source" -ForegroundColor Yellow
     }
 }
