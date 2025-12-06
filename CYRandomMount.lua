@@ -20,11 +20,26 @@ local function TryLoadOptions()
         -- Handle potential macro name migration from old versions
         local db = _G.CYRandomMountDB
         if db and db.Default and db.Default.macroName and db.Default.macroName ~= DefaultMacroName then
+            if ShowDebug then
+                print("CYRandomMount: Migrating macro from '" .. db.Default.macroName .. "' to '" .. DefaultMacroName .. "'")
+            end
             local oldMacroIndex = GetMacroIndexByName(db.Default.macroName)
             if oldMacroIndex then
-                pcall(DeleteMacro, oldMacroIndex)
+                local success, err = pcall(DeleteMacro, oldMacroIndex)
+                if ShowDebug then
+                    if success then
+                        print("CYRandomMount: Old macro deleted successfully")
+                    else
+                        print("CYRandomMount: Failed to delete old macro: " .. tostring(err))
+                    end
+                end
+            elseif ShowDebug then
+                print("CYRandomMount: Old macro not found, skipping deletion")
             end
             db.Default.macroName = DefaultMacroName
+            if ShowDebug then
+                print("CYRandomMount: Stored macro name reset to default")
+            end
         end
 
         if ShowDebug then
