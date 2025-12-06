@@ -1,5 +1,192 @@
 -- CYRandomMount Options Panel
 
+-- Localization table
+local L = {}
+local selectedLocale = "auto"
+
+local languages = {
+    {code = "auto", name = "Auto (Game Language)"},
+    {code = "zhTW", name = "繁體中文"},
+    {code = "zhCN", name = "简体中文"},
+    {code = "enUS", name = "English"},
+    {code = "jaJP", name = "日本語"},
+    {code = "koKR", name = "한국어"},
+    {code = "frFR", name = "Français"},
+    {code = "deDE", name = "Deutsch"},
+    {code = "esES", name = "Español"},
+    {code = "ptBR", name = "Português"},
+    {code = "ruRU", name = "Русский"},
+}
+
+local function SetLocalization(loc)
+    selectedLocale = loc
+    local actualLoc = loc
+    if loc == "auto" then
+        actualLoc = GetLocale()
+    end
+    L = {}
+    
+    -- English (default)
+    L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+    L["RESET_MACRO_LABEL"] = "Reset Macro:"
+    L["RESET_MACRO_BUTTON"] = "Press"
+    L["REFRESH_TIME_TITLE"] = "Refresh Time (sec):"
+    L["MACRO_UPDATE_TITLE"] = "Macro update timing:"
+    L["UPDATE_IMMEDIATE"] = "Update macro immediately (Recommended)"
+    L["UPDATE_PERIODIC"] = "Update macro every RefreshTime seconds (Legacy)"
+    L["LIST_MODE_TITLE"] = "Mount List Mode:"
+    L["CHARACTER_SPECIFIC"] = "Character Specific List"
+    L["ACCOUNT_SHARED"] = "Account Shared List"
+    L["FLYING_MOUNTS_TITLE"] = "Flying Mounts"
+    L["GROUND_MOUNTS_TITLE"] = "Ground Mounts"
+    L["LANGUAGE_TITLE"] = "Language:"
+    
+    -- Traditional Chinese
+    if actualLoc == "zhTW" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "重置巨集:"
+        L["RESET_MACRO_BUTTON"] = "按下"
+        L["REFRESH_TIME_TITLE"] = "刷新時間 (秒):"
+        L["MACRO_UPDATE_TITLE"] = "巨集更新時機:"
+        L["UPDATE_IMMEDIATE"] = "立即更新巨集 (推薦)"
+        L["UPDATE_PERIODIC"] = "每隔 RefreshTime 秒更新巨集 (舊版)"
+        L["LIST_MODE_TITLE"] = "坐騎清單模式:"
+        L["CHARACTER_SPECIFIC"] = "角色獨立清單"
+        L["ACCOUNT_SHARED"] = "帳號共用清單"
+        L["FLYING_MOUNTS_TITLE"] = "飛行坐騎"
+        L["GROUND_MOUNTS_TITLE"] = "地面坐騎"
+        L["LANGUAGE_TITLE"] = "語言:"
+    -- Simplified Chinese
+    elseif actualLoc == "zhCN" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "重置宏:"
+        L["RESET_MACRO_BUTTON"] = "按下"
+        L["REFRESH_TIME_TITLE"] = "刷新时间 (秒):"
+        L["MACRO_UPDATE_TITLE"] = "宏更新时机:"
+        L["UPDATE_IMMEDIATE"] = "立即更新宏 (推荐)"
+        L["UPDATE_PERIODIC"] = "每隔 RefreshTime 秒更新宏 (旧版)"
+        L["LIST_MODE_TITLE"] = "坐骑列表模式:"
+        L["CHARACTER_SPECIFIC"] = "角色独立列表"
+        L["ACCOUNT_SHARED"] = "账号共享列表"
+        L["FLYING_MOUNTS_TITLE"] = "飞行坐骑"
+        L["GROUND_MOUNTS_TITLE"] = "地面坐骑"
+        L["LANGUAGE_TITLE"] = "语言:"
+    -- French
+    elseif actualLoc == "frFR" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "Réinitialiser la macro:"
+        L["RESET_MACRO_BUTTON"] = "Appuyer"
+        L["REFRESH_TIME_TITLE"] = "Temps de rafraîchissement (sec):"
+        L["MACRO_UPDATE_TITLE"] = "Calendrier de mise à jour de la macro:"
+        L["UPDATE_IMMEDIATE"] = "Mettre à jour la macro immédiatement (Recommandé)"
+        L["UPDATE_PERIODIC"] = "Mettre à jour la macro toutes les RefreshTime secondes (Héritage)"
+        L["LIST_MODE_TITLE"] = "Mode de liste de montures:"
+        L["CHARACTER_SPECIFIC"] = "Liste spécifique au personnage"
+        L["ACCOUNT_SHARED"] = "Liste partagée du compte"
+        L["FLYING_MOUNTS_TITLE"] = "Montures volantes"
+        L["GROUND_MOUNTS_TITLE"] = "Montures terrestres"
+        L["LANGUAGE_TITLE"] = "Langue:"
+    -- German
+    elseif actualLoc == "deDE" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "Makro zurücksetzen:"
+        L["RESET_MACRO_BUTTON"] = "Drücken"
+        L["REFRESH_TIME_TITLE"] = "Aktualisierungszeit (Sek):"
+        L["MACRO_UPDATE_TITLE"] = "Makro-Aktualisierungszeitpunkt:"
+        L["UPDATE_IMMEDIATE"] = "Makro sofort aktualisieren (Empfohlen)"
+        L["UPDATE_PERIODIC"] = "Makro alle RefreshTime Sekunden aktualisieren (Legacy)"
+        L["LIST_MODE_TITLE"] = "Mount-Listenmodus:"
+        L["CHARACTER_SPECIFIC"] = "Charakterspezifische Liste"
+        L["ACCOUNT_SHARED"] = "Kontoübergreifende Liste"
+        L["FLYING_MOUNTS_TITLE"] = "Fliegende Mounts"
+        L["GROUND_MOUNTS_TITLE"] = "Boden-Mounts"
+        L["LANGUAGE_TITLE"] = "Sprache:"
+    -- Spanish
+    elseif actualLoc == "esES" or actualLoc == "esMX" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "Restablecer macro:"
+        L["RESET_MACRO_BUTTON"] = "Presionar"
+        L["REFRESH_TIME_TITLE"] = "Tiempo de actualización (seg):"
+        L["MACRO_UPDATE_TITLE"] = "Programación de actualización de macro:"
+        L["UPDATE_IMMEDIATE"] = "Actualizar macro inmediatamente (Recomendado)"
+        L["UPDATE_PERIODIC"] = "Actualizar macro cada RefreshTime segundos (Legacy)"
+        L["LIST_MODE_TITLE"] = "Modo de lista de monturas:"
+        L["CHARACTER_SPECIFIC"] = "Lista específica del personaje"
+        L["ACCOUNT_SHARED"] = "Lista compartida de la cuenta"
+        L["FLYING_MOUNTS_TITLE"] = "Monturas voladoras"
+        L["GROUND_MOUNTS_TITLE"] = "Monturas terrestres"
+        L["LANGUAGE_TITLE"] = "Idioma:"
+    -- Portuguese
+    elseif actualLoc == "ptBR" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "Redefinir macro:"
+        L["RESET_MACRO_BUTTON"] = "Pressionar"
+        L["REFRESH_TIME_TITLE"] = "Tempo de atualização (seg):"
+        L["MACRO_UPDATE_TITLE"] = "Cronograma de atualização da macro:"
+        L["UPDATE_IMMEDIATE"] = "Atualizar macro imediatamente (Recomendado)"
+        L["UPDATE_PERIODIC"] = "Atualizar macro a cada RefreshTime segundos (Legacy)"
+        L["LIST_MODE_TITLE"] = "Modo de lista de montarias:"
+        L["CHARACTER_SPECIFIC"] = "Lista específica do personagem"
+        L["ACCOUNT_SHARED"] = "Lista compartilhada da conta"
+        L["FLYING_MOUNTS_TITLE"] = "Montarias voadoras"
+        L["GROUND_MOUNTS_TITLE"] = "Montarias terrestres"
+        L["LANGUAGE_TITLE"] = "Idioma:"
+    -- Russian
+    elseif actualLoc == "ruRU" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "Сбросить макрос:"
+        L["RESET_MACRO_BUTTON"] = "Нажать"
+        L["REFRESH_TIME_TITLE"] = "Время обновления (сек):"
+        L["MACRO_UPDATE_TITLE"] = "Время обновления макроса:"
+        L["UPDATE_IMMEDIATE"] = "Обновить макрос немедленно (Рекомендуется)"
+        L["UPDATE_PERIODIC"] = "Обновлять макрос каждые RefreshTime секунд (Устаревшее)"
+        L["LIST_MODE_TITLE"] = "Режим списка транспорта:"
+        L["CHARACTER_SPECIFIC"] = "Список конкретного персонажа"
+        L["ACCOUNT_SHARED"] = "Общий список аккаунта"
+        L["FLYING_MOUNTS_TITLE"] = "Летающий транспорт"
+        L["GROUND_MOUNTS_TITLE"] = "Наземный транспорт"
+        L["LANGUAGE_TITLE"] = "Язык:"
+    -- Korean
+    elseif actualLoc == "koKR" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "매크로 재설정:"
+        L["RESET_MACRO_BUTTON"] = "누르기"
+        L["REFRESH_TIME_TITLE"] = "새로고침 시간 (초):"
+        L["MACRO_UPDATE_TITLE"] = "매크로 업데이트 시기:"
+        L["UPDATE_IMMEDIATE"] = "매크로 즉시 업데이트 (권장)"
+        L["UPDATE_PERIODIC"] = "RefreshTime초마다 매크로 업데이트 (레거시)"
+        L["LIST_MODE_TITLE"] = "탈것 목록 모드:"
+        L["CHARACTER_SPECIFIC"] = "캐릭터별 목록"
+        L["ACCOUNT_SHARED"] = "계정 공유 목록"
+        L["FLYING_MOUNTS_TITLE"] = "비행 탈것"
+        L["GROUND_MOUNTS_TITLE"] = "지상 탈것"
+        L["LANGUAGE_TITLE"] = "언어:"
+    -- Japanese
+    elseif actualLoc == "jaJP" then
+        L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
+        L["RESET_MACRO_LABEL"] = "マクロをリセット:"
+        L["RESET_MACRO_BUTTON"] = "押す"
+        L["REFRESH_TIME_TITLE"] = "更新時間 (秒):"
+        L["MACRO_UPDATE_TITLE"] = "マクロ更新タイミング:"
+        L["UPDATE_IMMEDIATE"] = "マクロを即座に更新 (推奨)"
+        L["UPDATE_PERIODIC"] = "RefreshTime秒ごとにマクロを更新 (レガシー)"
+        L["LIST_MODE_TITLE"] = "マウントリストモード:"
+        L["CHARACTER_SPECIFIC"] = "キャラクター固有リスト"
+        L["ACCOUNT_SHARED"] = "アカウント共有リスト"
+        L["FLYING_MOUNTS_TITLE"] = "飛行マウント"
+        L["GROUND_MOUNTS_TITLE"] = "地上マウント"
+        L["LANGUAGE_TITLE"] = "言語:"
+    end
+end
+
+-- Initialize localization
+SetLocalization(selectedLocale)
+
+-- Localization function
+local function GetLocalizedText(key)
+    return L[key] or key
+end
+
 local panel, refreshTimeSlider, refreshTimeText, flyingBox, groundBox
 local RefreshTime = 10
 local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
@@ -56,7 +243,8 @@ local function InitCYRandomMountDB()
                 ListMode = 1, -- Default to character-specific
                 FlyingMounts = oldData.FlyingMounts or {},
                 GroundMounts = oldData.GroundMounts or {},
-                availableMountsCount = oldData.availableMountsCount or 0
+                availableMountsCount = oldData.availableMountsCount or 0,
+                SelectedLocale = "auto"
             }
         }
     end
@@ -155,21 +343,29 @@ function CYRandomMountOptions.CreateOptionsPanel()
         -- Create a label for "Reset Macro:"
         local resetMacroLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         resetMacroLabel:SetPoint("TOPLEFT", 16, -16)
-        resetMacroLabel:SetText("Reset Macro:")
+        resetMacroLabel:SetText(GetLocalizedText("RESET_MACRO_LABEL"))
 
         -- Create a "Press" button to the right of the label
         local resetMacroButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
         resetMacroButton:SetSize(60, 22)
         resetMacroButton:SetPoint("LEFT", resetMacroLabel, "RIGHT", 8, 0)
-        resetMacroButton:SetText("Press")
+        resetMacroButton:SetText(GetLocalizedText("RESET_MACRO_BUTTON"))
         resetMacroButton:SetScript("OnClick", function()
             CYRandomMount_InstantUpdate()
             print("CYRandomMount: Macro has been reset.")
         end)
 
+        -- Add Language dropdown to the right of reset button (only when debug is enabled)
+        local languageDropdown
+        if ShowDebug then
+            languageDropdown = CreateFrame("Frame", nil, panel, "UIDropDownMenuTemplate")
+            languageDropdown:SetPoint("LEFT", resetMacroButton, "RIGHT", 16, 0)
+            UIDropDownMenu_SetWidth(languageDropdown, 230)
+        end
+
         local refreshTimeTitle = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         refreshTimeTitle:SetPoint("TOPLEFT", resetMacroLabel, "BOTTOMLEFT", 0, -16)
-        refreshTimeTitle:SetText("Refresh Time (sec):")
+        refreshTimeTitle:SetText(GetLocalizedText("REFRESH_TIME_TITLE"))
 
         refreshTimeSlider = CreateFrame("Slider", nil, panel, "OptionsSliderTemplate")
         refreshTimeSlider:SetOrientation("HORIZONTAL")
@@ -191,14 +387,14 @@ function CYRandomMountOptions.CreateOptionsPanel()
         
         -- Add macro update timing option
         local updateMacroTitle = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        updateMacroTitle:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -32)
-        updateMacroTitle:SetText("Macro update timing:")
+        updateMacroTitle:SetPoint("TOPLEFT", refreshTimeTitle, "BOTTOMLEFT", 0, -24)
+        updateMacroTitle:SetText(GetLocalizedText("MACRO_UPDATE_TITLE"))
 
         updateMacroRadio1 = CreateFrame("CheckButton", nil, panel, "UIRadioButtonTemplate")
         updateMacroRadio1:SetPoint("TOPLEFT", updateMacroTitle, "BOTTOMLEFT", 0, -4)
         updateMacroRadio1.text = updateMacroRadio1:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         updateMacroRadio1.text:SetPoint("LEFT", updateMacroRadio1, "RIGHT", 4, 0)
-        updateMacroRadio1.text:SetText("Update macro immediately (Recommended)")
+        updateMacroRadio1.text:SetText(GetLocalizedText("UPDATE_IMMEDIATE"))
         updateMacroRadio1:SetScript("OnClick", function()
             updateMacroRadio2:SetChecked(false)
             UpdateMacroMode = 1
@@ -210,7 +406,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         updateMacroRadio2:SetPoint("TOPLEFT", updateMacroRadio1, "BOTTOMLEFT", 0, -4)
         updateMacroRadio2.text = updateMacroRadio2:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         updateMacroRadio2.text:SetPoint("LEFT", updateMacroRadio2, "RIGHT", 4, 0)
-        updateMacroRadio2.text:SetText("Update macro every RefreshTime seconds (Legacy)")
+        updateMacroRadio2.text:SetText(GetLocalizedText("UPDATE_PERIODIC"))
         updateMacroRadio2:SetScript("OnClick", function()
             updateMacroRadio1:SetChecked(false)
             UpdateMacroMode = 2
@@ -223,14 +419,14 @@ function CYRandomMountOptions.CreateOptionsPanel()
         
         -- Add List Mode option
         local listModeTitle = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        listModeTitle:SetPoint("TOPLEFT", updateMacroRadio2, "BOTTOMLEFT", 0, -16)
-        listModeTitle:SetText("Mount List Mode:")
+        listModeTitle:SetPoint("TOPLEFT", updateMacroTitle, "BOTTOMLEFT", 0, -48)
+        listModeTitle:SetText(GetLocalizedText("LIST_MODE_TITLE"))
 
         listModeRadio1 = CreateFrame("CheckButton", nil, panel, "UIRadioButtonTemplate")
         listModeRadio1:SetPoint("TOPLEFT", listModeTitle, "BOTTOMLEFT", 0, -4)
         listModeRadio1.text = listModeRadio1:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         listModeRadio1.text:SetPoint("LEFT", listModeRadio1, "RIGHT", 4, 0)
-        listModeRadio1.text:SetText("Character Specific List")
+        listModeRadio1.text:SetText(GetLocalizedText("CHARACTER_SPECIFIC"))
         listModeRadio1:SetScript("OnClick", function()
             listModeRadio2:SetChecked(false)
             ListMode = 1
@@ -269,7 +465,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         listModeRadio2:SetPoint("TOPLEFT", listModeRadio1, "BOTTOMLEFT", 0, -4)
         listModeRadio2.text = listModeRadio2:CreateFontString(nil, "ARTWORK", "GameFontNormal")
         listModeRadio2.text:SetPoint("LEFT", listModeRadio2, "RIGHT", 4, 0)
-        listModeRadio2.text:SetText("Account Wide List (Default Profile)")
+        listModeRadio2.text:SetText(GetLocalizedText("ACCOUNT_SHARED"))
         listModeRadio2:SetScript("OnClick", function()
             listModeRadio1:SetChecked(false)
             ListMode = 2
@@ -281,6 +477,55 @@ function CYRandomMountOptions.CreateOptionsPanel()
         panel.listModeRadio1 = listModeRadio1
         panel.listModeRadio2 = listModeRadio2
 
+        local function UpdateTexts()
+            if resetMacroLabel then resetMacroLabel:SetText(GetLocalizedText("RESET_MACRO_LABEL")) end
+            if resetMacroButton then resetMacroButton:SetText(GetLocalizedText("RESET_MACRO_BUTTON")) end
+            if refreshTimeTitle then refreshTimeTitle:SetText(GetLocalizedText("REFRESH_TIME_TITLE")) end
+            if updateMacroTitle then updateMacroTitle:SetText(GetLocalizedText("MACRO_UPDATE_TITLE")) end
+            if updateMacroRadio1 and updateMacroRadio1.text then updateMacroRadio1.text:SetText(GetLocalizedText("UPDATE_IMMEDIATE")) end
+            if updateMacroRadio2 and updateMacroRadio2.text then updateMacroRadio2.text:SetText(GetLocalizedText("UPDATE_PERIODIC")) end
+            if listModeTitle then listModeTitle:SetText(GetLocalizedText("LIST_MODE_TITLE")) end
+            if listModeRadio1 and listModeRadio1.text then listModeRadio1.text:SetText(GetLocalizedText("CHARACTER_SPECIFIC")) end
+            if listModeRadio2 and listModeRadio2.text then listModeRadio2.text:SetText(GetLocalizedText("ACCOUNT_SHARED")) end
+            if flyingBox and flyingBox.title then flyingBox.title:SetText(GetLocalizedText("FLYING_MOUNTS_TITLE")) end
+            if groundBox and groundBox.title then groundBox.title:SetText(GetLocalizedText("GROUND_MOUNTS_TITLE")) end
+        end
+        
+        -- Set initial value
+        local charKey = GetCharacterKey()
+        if CYRandomMountDB[charKey] and CYRandomMountDB[charKey].SelectedLocale then
+            selectedLocale = CYRandomMountDB[charKey].SelectedLocale
+            SetLocalization(selectedLocale)
+        end
+        
+        if ShowDebug and languageDropdown then
+            UIDropDownMenu_Initialize(languageDropdown, function(self, level, menuList)
+                for _, lang in ipairs(languages) do
+                    local info = UIDropDownMenu_CreateInfo()
+                    info.text = lang.name
+                    info.value = lang.code
+                    info.checked = (selectedLocale == lang.code)
+                    info.func = function(self)
+                        SetLocalization(self.value)
+                        UpdateTexts()
+                        UIDropDownMenu_SetSelectedValue(languageDropdown, self.value)
+                        -- Save to settings
+                        local charKey = GetCharacterKey()
+                        CYRandomMountDB[charKey].SelectedLocale = self.value
+                    end
+                    UIDropDownMenu_AddButton(info)
+                end
+            end)
+            
+            UIDropDownMenu_SetSelectedValue(languageDropdown, selectedLocale)
+            for _, lang in ipairs(languages) do
+                if lang.code == selectedLocale then
+                    UIDropDownMenu_SetText(languageDropdown, lang.name)
+                    break
+                end
+            end
+        end
+
         local function CreateMountBox(mounts, parent, label)
             local box, scrollFrame, scrollChild, title
             box = CreateFrame("Frame", nil, parent)
@@ -289,6 +534,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             title = box:CreateFontString(nil, "ARTWORK", "GameFontNormal")
             title:SetPoint("TOPLEFT", 4, -4)
             title:SetText(label)
+            box.title = title
 
             if #mounts > 14 then
                 scrollFrame = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
@@ -401,10 +647,10 @@ function CYRandomMountOptions.CreateOptionsPanel()
             end
             
             -- Create new boxes with current mount list
-            flyingBox = CreateMountBox(flyingMounts, panel, "Mounts for Flying area")
+            flyingBox = CreateMountBox(flyingMounts, panel, GetLocalizedText("FLYING_MOUNTS_TITLE"))
             flyingBox:SetPoint("TOPLEFT", listModeRadio2, "BOTTOMLEFT", -20, -16)
 
-            groundBox = CreateMountBox(groundMounts, panel, "Mounts for Ground only area")
+            groundBox = CreateMountBox(groundMounts, panel, GetLocalizedText("GROUND_MOUNTS_TITLE"))
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 16, 0)
             
             LoadSettings()
@@ -414,6 +660,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
         Settings.RegisterAddOnCategory(category)
 
         SLASH_CYRandomMount1 = "/cyrandommount"
+        SLASH_CYRandomMount2 = "/cyrm"
         SlashCmdList["CYRandomMount"] = function()
             Settings.OpenToCategory(category:GetID())
         end

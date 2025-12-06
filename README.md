@@ -4,6 +4,7 @@ CYRandomMount is a World of Warcraft addon that intelligently manages mount summ
 
 ## Features
 
+- **Multi-Language Support:** Options UI automatically displays in your game client's language (Traditional Chinese, Simplified Chinese, French, German, Spanish, Portuguese, Russian, Korean, Japanese, and English).
 - **Automatic Macro Update:** Creates and updates a macro named `CYRandomMount` to summon a random selected mount suitable for your current area (flying, ground, or special zones like Undermine).
   **Macro Update Modes:**
    - **Mode 1:** The macro will update and select a new random mount every time you press the macro button (recommended).
@@ -20,7 +21,7 @@ CYRandomMount is a World of Warcraft addon that intelligently manages mount summ
    - Place the `CYRandomMount` folder in your `path_to\World of Warcraft\_retail_\Interface\AddOns` directory.
 
 2. **In-Game Setup:**
-   - Type `/cyrandommount` in chat to open the settings panel.
+   - Type `/cyrandommount` or `/cyrm` in chat to open the settings panel.
    - **Choose List Mode:** Select whether to use character-specific mount lists or account-wide shared lists.
      - **Character-specific:** Each character maintains its own mount preferences.
      - **Account-wide:** All characters share the same mount preferences (recommended for new characters).
