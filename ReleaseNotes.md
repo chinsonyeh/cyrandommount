@@ -1,6 +1,13 @@
 # Release Notes
 
-## [2.0.1]
+## [2.2.0]
+### Added
+- Added multi-language support for the options UI. The interface now displays in the player's game client language (Traditional Chinese, Simplified Chinese, French, German, Spanish, Portuguese, Russian, Korean, and English).
+
+### Changed
+- Both `/cyrm` and `/cyrandommount` can be used in chat to open the settings panel
+
+## [2.1.0]
 ### Changed
 - Improved mount variety: When selecting the next random mount, the addon now excludes the currently selected mount from the pool (if more than one mount is available), ensuring you get a different mount each time you summon
 
