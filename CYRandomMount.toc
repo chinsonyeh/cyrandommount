@@ -1,8 +1,8 @@
 ## Interface: 110207
 ## Title: CYRandomMount
-## Notes: Give you a random mount according to if the area flyable.
+## Notes: Intelligent random mount summoning with variety guarantee. Supports character-specific and account-wide mount lists, automatic zone detection, and special area handling.
 ## Author: chinsonyeh
-## Version: 2.0.0
+## Version: 2.0.1
 ## SavedVariables: CYRandomMountDB
 
 CYRandomMountOptions.lua

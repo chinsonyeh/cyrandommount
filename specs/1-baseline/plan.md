@@ -92,6 +92,7 @@ local macroBody = "#showtooltip\n" ..
 2. 取得下一個隨機可用坐騎 ID（與本次召喚可能不同）。
 3. 使用 `SafeEditMacro()` 改寫巨集內容，使下次按下巨集時直接使用排程後的坐騎。
 4. 若本次召喚被打斷（玩家移動/中斷引導），巨集仍已更新，不需補救。
+5. 更新隨機座騎時，如果可用座騎超過1個，則應排除目前所選擇的座騎（已實作於 v2.1.0）。
 
 **關鍵技術點（更新後）**:
 - 在巨集尾段呼叫 `CYRandomMount_InstantUpdate()`，但僅在未騎乘時排程下一個坐騎。
@@ -138,7 +139,21 @@ local mountTypeID = select(5, C_MountJournal.GetMountInfoExtraByID(mountID))
 
 **實作函式**:
 ```lua
-local function GetRandomSelectedFlyingMount()
+-- 從巨集內容提取當前使用的 mountID
+local function GetCurrentMountIDFromMacro()
+    local macroIndex = GetMacroIndexByName(macroName)
+    if not macroIndex then return nil end
+    
+    local _, _, body = GetMacroInfo(macroIndex)
+    if body then
+        local mountID = body:match("C_MountJournal%.SummonByID%((%d+)%)")
+        if mountID then return tonumber(mountID) end
+    end
+    return nil
+end
+
+-- 支援排除指定 mountID 的隨機選擇
+local function GetRandomSelectedFlyingMount(excludeMountID)
     local key = UnitName("player").."-"..GetRealmName()
     local db = CYRandomMountDB[key] or {}
     local listMode = db.ListMode or 1
@@ -155,6 +170,19 @@ local function GetRandomSelectedFlyingMount()
         end
     end
     
+    -- 如果可用坐騎超過1個，排除當前坐騎以確保多樣性
+    if #selected > 1 and excludeMountID then
+        local filtered = {}
+        for _, mountID in ipairs(selected) do
+            if mountID ~= excludeMountID then
+                table.insert(filtered, mountID)
+            end
+        end
+        if #filtered > 0 then
+            selected = filtered
+        end
+    end
+    
     if #selected > 0 then
         return selected[math.random(#selected)]
     end
@@ -168,13 +196,18 @@ end
 - 無可用坐騎回傳 nil 避免錯誤。
 - 根據 `ListMode` 決定來源（角色 / Default）。
 - 『下一座騎排程』與『本次召喚』分離：巨集執行時使用當前巨集中的 mountID；執行後僅在未騎乘時排程並寫入下次 mountID。
+- **排除當前坐騎**：從巨集內容提取當前 mountID，在選擇下一個坐騎時排除（僅當可用坐騎 > 1 時），確保每次切換都是不同的坐騎，增加多樣性（v2.1.0 新增）。
 
 **下一座騎排程核心流程（示意）**:
 ```lua
 function CYRandomMount_InstantUpdate()
     -- 只在未騎乘狀態時更新座騎（避免下馬時切換）
     if not IsMounted() then
-        local nextMountID = DetermineNextMountID() -- 內部整合可飛行/特殊區域判斷
+        -- 獲取當前巨集中的 mountID 以便排除
+        local currentMountID = GetCurrentMountIDFromMacro()
+        
+        -- 內部整合可飛行/特殊區域判斷，並傳遞 currentMountID 用於排除
+        local nextMountID = DetermineNextMountID(currentMountID)
         if nextMountID then
             local body = "#showtooltip\n" ..
                 "/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(" .. nextMountID .. ") end\n" ..
