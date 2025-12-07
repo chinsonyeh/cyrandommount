@@ -1,5 +1,9 @@
 # Release Notes
 
+## [2.3.1]
+### Fixed
+- Fixed a bug preventing mount list changes in non-English languages.
+
 ## [2.3.0]
 ### Added
 - Added a draggable icon in the options UI. Drag it to your action bar to use it!
