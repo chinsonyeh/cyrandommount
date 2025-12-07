@@ -286,6 +286,9 @@ local function SaveSelectedFlyingMounts()
             end
         end
     end
+    if ShowDebug then
+        print("CYRandomMount: Saved " .. #profile.FlyingMounts .. " flying mounts")
+    end
 end
 
 local function SaveSelectedGroundMounts()
@@ -297,6 +300,9 @@ local function SaveSelectedGroundMounts()
                 table.insert(profile.GroundMounts, check.mountID)
             end
         end
+    end
+    if ShowDebug then
+        print("CYRandomMount: Saved " .. #profile.GroundMounts .. " ground mounts")
     end
 end
 
@@ -328,12 +334,18 @@ local function LoadSettings()
         for _, check in ipairs(flyingBox.checks) do
             check:SetChecked(selected[check.mountID] or false)
         end
+        if ShowDebug then
+            print("CYRandomMount: Loaded " .. #currentProfile.FlyingMounts .. " flying mounts")
+        end
     end
     if currentProfile.GroundMounts and groundBox and groundBox.checks then
         local selected = {}
         for _, id in ipairs(currentProfile.GroundMounts) do selected[id] = true end
         for _, check in ipairs(groundBox.checks) do
             check:SetChecked(selected[check.mountID] or false)
+        end
+        if ShowDebug then
+            print("CYRandomMount: Loaded " .. #currentProfile.GroundMounts .. " ground mounts")
         end
     end
 end
@@ -618,7 +630,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             end
         end
 
-        local function CreateMountBox(mounts, parent, label)
+        local function CreateMountBox(mounts, parent, label, isFlying)
             local box, scrollFrame, scrollChild, title
             box = CreateFrame("Frame", nil, parent)
             local boxHeight = (#mounts > 15) and 360 or math.max(56, #mounts * 24 + 24)
@@ -673,7 +685,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
                 check.textLabel:SetWidth(200)
 
                 check:SetScript("OnClick", function()
-                    if label:find("Flying") then
+                    if isFlying then
                         SaveSelectedFlyingMounts()
                     else
                         SaveSelectedGroundMounts()
@@ -739,10 +751,10 @@ function CYRandomMountOptions.CreateOptionsPanel()
             end
             
             -- Create new boxes with current mount list
-            flyingBox = CreateMountBox(flyingMounts, panel, GetLocalizedText("FLYING_MOUNTS_TITLE"))
+            flyingBox = CreateMountBox(flyingMounts, panel, GetLocalizedText("FLYING_MOUNTS_TITLE"), true)
             flyingBox:SetPoint("TOPLEFT", listModeRadio2, "BOTTOMLEFT", -20, -16)
 
-            groundBox = CreateMountBox(groundMounts, panel, GetLocalizedText("GROUND_MOUNTS_TITLE"))
+            groundBox = CreateMountBox(groundMounts, panel, GetLocalizedText("GROUND_MOUNTS_TITLE"), false)
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 16, 0)
             
             LoadSettings()
