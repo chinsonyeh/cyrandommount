@@ -1,5 +1,9 @@
 # Release Notes
 
+## [2.3.0]
+### Added
+- Added a draggable icon in the options UI. Drag it to your action bar to use it!
+
 ## [2.2.0]
 ### Added
 - Added multi-language support for the options UI. The interface now displays in the player's game client language (Traditional Chinese, Simplified Chinese, French, German, Spanish, Portuguese, Russian, Korean, and English).
