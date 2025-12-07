@@ -40,6 +40,7 @@ local function SetLocalization(loc)
     L["FLYING_MOUNTS_TITLE"] = "Flying Mounts"
     L["GROUND_MOUNTS_TITLE"] = "Ground Mounts"
     L["LANGUAGE_TITLE"] = "Language:"
+    L["DRAG_MACRO_TOOLTIP"] = "Drag this macro to your action bar."
     
     -- Traditional Chinese
     if actualLoc == "zhTW" then
@@ -56,6 +57,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "飛行坐騎"
         L["GROUND_MOUNTS_TITLE"] = "地面坐騎"
         L["LANGUAGE_TITLE"] = "語言:"
+        L["DRAG_MACRO_TOOLTIP"] = "將此巨集拖曳至快捷列。"
     -- Simplified Chinese
     elseif actualLoc == "zhCN" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -71,6 +73,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "飞行坐骑"
         L["GROUND_MOUNTS_TITLE"] = "地面坐骑"
         L["LANGUAGE_TITLE"] = "语言:"
+        L["DRAG_MACRO_TOOLTIP"] = "将此宏拖动到动作条。"
     -- French
     elseif actualLoc == "frFR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -86,6 +89,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "Montures volantes"
         L["GROUND_MOUNTS_TITLE"] = "Montures terrestres"
         L["LANGUAGE_TITLE"] = "Langue:"
+        L["DRAG_MACRO_TOOLTIP"] = "Faites glisser cette macro sur votre barre d'action."
     -- German
     elseif actualLoc == "deDE" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -101,6 +105,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "Fliegende Mounts"
         L["GROUND_MOUNTS_TITLE"] = "Boden-Mounts"
         L["LANGUAGE_TITLE"] = "Sprache:"
+        L["DRAG_MACRO_TOOLTIP"] = "Zieh dieses Makro in deine Aktionsleiste."
     -- Spanish
     elseif actualLoc == "esES" or actualLoc == "esMX" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -116,6 +121,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "Monturas voladoras"
         L["GROUND_MOUNTS_TITLE"] = "Monturas terrestres"
         L["LANGUAGE_TITLE"] = "Idioma:"
+        L["DRAG_MACRO_TOOLTIP"] = "Arrastra este macro a tu barra de acción."
     -- Portuguese
     elseif actualLoc == "ptBR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -131,6 +137,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "Montarias voadoras"
         L["GROUND_MOUNTS_TITLE"] = "Montarias terrestres"
         L["LANGUAGE_TITLE"] = "Idioma:"
+        L["DRAG_MACRO_TOOLTIP"] = "Arraste este macro para a sua barra de ação."
     -- Russian
     elseif actualLoc == "ruRU" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -146,6 +153,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "Летающий транспорт"
         L["GROUND_MOUNTS_TITLE"] = "Наземный транспорт"
         L["LANGUAGE_TITLE"] = "Язык:"
+        L["DRAG_MACRO_TOOLTIP"] = "Перетащите этот макрос на вашу панель действий."
     -- Korean
     elseif actualLoc == "koKR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -161,6 +169,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "비행 탈것"
         L["GROUND_MOUNTS_TITLE"] = "지상 탈것"
         L["LANGUAGE_TITLE"] = "언어:"
+        L["DRAG_MACRO_TOOLTIP"] = "이 매크로를 행동 단축바로 끌어다 놓으세요."
     -- Japanese
     elseif actualLoc == "jaJP" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -176,6 +185,7 @@ local function SetLocalization(loc)
         L["FLYING_MOUNTS_TITLE"] = "飛行マウント"
         L["GROUND_MOUNTS_TITLE"] = "地上マウント"
         L["LANGUAGE_TITLE"] = "言語:"
+        L["DRAG_MACRO_TOOLTIP"] = "このマクロをアクションバーにドラッグしてください。"
     end
 end
 
@@ -328,6 +338,43 @@ local function LoadSettings()
     end
 end
 
+-- 假設 ns 是一個你的插件會用到的全域或命名空間表格
+-- 如果沒有，你可以直接宣告 local ns = {}
+local ns = ns or {}
+ns.redesignedButtons = ns.redesignedButtons or {} -- 用來存放已改造的按鈕
+
+---
+-- 為指定的按鈕重新設計外觀，加上自訂外框和圖示。
+-- @param button 要重新設計的按鈕物件 (例如 dragMacroButton)
+--
+local function RedesignMacroButton(button)
+    -- We're redesigning the button itself, not creating an overlay
+    if not button.customBorder then
+        button:SetBackdrop({
+            edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+            edgeSize = 16,
+            insets = { left = 2, right = 2, top = 2, bottom = 2 }
+        })
+        button:SetBackdropBorderColor(0.8, 0.8, 0.8, 1.0)
+
+        -- We use a custom property to mark it as redesigned
+        button.customBorder = true -- Just a flag now
+
+        local icon = button:CreateTexture(nil, "OVERLAY")
+        icon:SetSize(24, 24)
+        icon:SetPoint("TOPRIGHT", 0, 0)
+        icon:SetTexture("Interface\Icons\Ability_Hunter_MarkedForDeath")
+        button.customIcon = icon
+
+        ns.redesignedButtons[button] = true
+    end
+
+    -- 確保覆蓋層的層級總是比按鈕高
+    if button.customIcon and button.customIcon:GetParent() then
+        button.customIcon:GetParent():SetFrameLevel(button:GetFrameLevel() + 1)
+    end
+end
+
 function CYRandomMountOptions.CreateOptionsPanel()
     InitCYRandomMountDB()
     local updateMacroRadio1, updateMacroRadio2, listModeRadio1, listModeRadio2
@@ -340,9 +387,50 @@ function CYRandomMountOptions.CreateOptionsPanel()
         panel = CreateFrame("Frame", nil, nil)
         panel.name = "CYRandomMount"
         
+        -- Create a container frame for the button and its border
+        local buttonContainer = CreateFrame("Frame", nil, panel)
+        buttonContainer:SetSize(54, 54)
+        buttonContainer:SetPoint("TOPRIGHT", -16, -16)
+
+        -- Create a draggable macro button
+        local dragMacroButton = CreateFrame("Button", "CYRandomMountDragButton", buttonContainer, "BackdropTemplate")
+        dragMacroButton:SetAllPoints(true)
+        RedesignMacroButton(dragMacroButton)
+
+        -- Icon Texture
+        dragMacroButton.icon = dragMacroButton:CreateTexture(nil, "BACKGROUND")
+        dragMacroButton.icon:SetPoint("TOPLEFT", 2, -2)
+        dragMacroButton.icon:SetPoint("BOTTOMRIGHT", -2, 2)
+        dragMacroButton.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        
+        dragMacroButton:RegisterForDrag("LeftButton")
+
+        local function UpdateDragButtonIcon()
+            local _, icon = GetMacroInfo(macroName)
+            if not icon or icon == "" then
+                icon = "Interface\\Icons\\INV_Misc_QuestionMark"
+            end
+            dragMacroButton.icon:SetTexture(icon)
+        end
+        
+        dragMacroButton:SetScript("OnDragStart", function()
+            if InCombatLockdown() then return end
+            PickupMacro(macroName)
+        end)
+
+        dragMacroButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(GetLocalizedText("DRAG_MACRO_TOOLTIP"), nil, nil, nil, nil, true)
+            GameTooltip:Show()
+        end)
+
+        dragMacroButton:SetScript("OnLeave", function()
+            GameTooltip:Hide()
+        end)
+
         -- Create a label for "Reset Macro:"
         local resetMacroLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        resetMacroLabel:SetPoint("TOPLEFT", 16, -16)
+        resetMacroLabel:SetPoint("TOPLEFT", 16, -40)
         resetMacroLabel:SetText(GetLocalizedText("RESET_MACRO_LABEL"))
 
         -- Create a "Press" button to the right of the label
@@ -354,6 +442,10 @@ function CYRandomMountOptions.CreateOptionsPanel()
             CYRandomMount_InstantUpdate()
             print("CYRandomMount: Macro has been reset.")
         end)
+
+        -- Add a reference to the button for the update function
+        panel.dragMacroButton = dragMacroButton
+        panel.UpdateDragButtonIcon = UpdateDragButtonIcon
 
         -- Add Language dropdown to the right of reset button (only when debug is enabled)
         local languageDropdown
@@ -665,7 +757,12 @@ function CYRandomMountOptions.CreateOptionsPanel()
             Settings.OpenToCategory(category:GetID())
         end
 
-        panel:HookScript("OnShow", UpdateMountListAndSettings)
+        panel:HookScript("OnShow", function()
+            UpdateMountListAndSettings()
+            if panel.UpdateDragButtonIcon then
+                panel.UpdateDragButtonIcon()
+            end
+        end)
 
     else
         -- Fallback for older WoW versions
