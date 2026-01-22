@@ -1,0 +1,92 @@
+name: Release to CurseForge
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: CYRandomMount  # Required to access environment secrets
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Extract Interface version from TOC
+        id: toc
+        run: |
+          # Extract Interface version from CYRandomMount.toc
+          INTERFACE_VERSION=$(grep -oP '^## Interface:\s*\K\d+' CYRandomMount.toc)
+          echo "Detected Interface version: $INTERFACE_VERSION"
+          
+          # Convert 120000 format to 12.0.0 format for CurseForge
+          # Pad to ensure 6 digits
+          PADDED=$(printf "%06d" $INTERFACE_VERSION)
+          MAJOR=$((10#${PADDED:0:2}))
+          MINOR=$((10#${PADDED:2:2}))
+          PATCH=$((10#${PADDED:4:2}))
+          GAME_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          
+          echo "interface=$INTERFACE_VERSION" >> $GITHUB_OUTPUT
+          echo "game_version=$GAME_VERSION" >> $GITHUB_OUTPUT
+          echo "Converted to game version: $GAME_VERSION"
+      
+      - name: Create release package
+        run: |
+          # Create a temporary directory for the package
+          mkdir -p release/CYRandomMount
+          
+          # Copy only the necessary files
+          cp CYRandomMount.lua release/CYRandomMount/
+          cp CYRandomMount.toc release/CYRandomMount/
+          cp CYRandomMountOptions.lua release/CYRandomMount/
+          cp ReleaseNotes.md release/CYRandomMount/
+          
+          # Create zip file
+          cd release
+          zip -r ../CYRandomMount-${{ steps.version.outputs.tag }}.zip CYRandomMount/
+      
+      - name: Extract latest release notes
+        run: |
+          # Extract only the latest version's release notes
+          awk '/^## \[/{if(++count==2) exit} count==1' ReleaseNotes.md > LATEST_RELEASE.md
+          echo "Latest release notes:"
+          cat LATEST_RELEASE.md
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: CYRandomMount-${{ steps.version.outputs.tag }}.zip
+          body_path: LATEST_RELEASE.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload to CurseForge
+        uses: itsmeow/curseforge-upload@v3
+        with:
+          token: ${{ secrets.CF_API_TOKEN }}
+          project_id: 1291693  # Replace with your CurseForge project ID
+          game_endpoint: wow
+          file_path: CYRandomMount-${{ steps.version.outputs.tag }}.zip
+          changelog: |
+            See full changelog at: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}
+          changelog_type: markdown
+          display_name: ${{ steps.version.outputs.tag }}
+          game_versions: ${{ steps.toc.outputs.game_version }}  # Automatically converted from TOC Interface version
+          release_type: release

@@ -2,7 +2,7 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
-## [2.4.0]
+## [2.4.2]
 ### Changed
 - Updated TOC interface version to 120000 for WoW 12.0 compatibility
 
