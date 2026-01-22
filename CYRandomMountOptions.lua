@@ -546,7 +546,8 @@ function CYRandomMountOptions.CreateOptionsPanel()
                     -- Filter and copy flying mounts
                     charProfile.FlyingMounts = {}
                     for _, mountID in ipairs(defaultProfile.FlyingMounts or {}) do
-                        local _, _, _, _, isUsable = C_MountJournal.GetMountInfoByID(mountID)
+                        -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
+                        local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
                         if isUsable then
                             table.insert(charProfile.FlyingMounts, mountID)
                         end
@@ -554,7 +555,8 @@ function CYRandomMountOptions.CreateOptionsPanel()
                     -- Filter and copy ground mounts
                     charProfile.GroundMounts = {}
                     for _, mountID in ipairs(defaultProfile.GroundMounts or {}) do
-                        local _, _, _, _, isUsable = C_MountJournal.GetMountInfoByID(mountID)
+                        -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
+                        local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
                         if isUsable then
                             table.insert(charProfile.GroundMounts, mountID)
                         end
@@ -704,7 +706,8 @@ function CYRandomMountOptions.CreateOptionsPanel()
             
             CYRandomMountDB.Default.availableMountsCount = #mountIDs
             for _, mountID in ipairs(mountIDs) do
-                local name, _, icon, _, isUsable, _, _, _, _, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+                -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
+                local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
                 if isCollected and name and icon and not hideOnChar and isUsable then
                     table.insert(availableMounts, {mountID = mountID, name = name, icon = icon})
                 end

@@ -84,7 +84,8 @@ local function CreateMountMacro(force)
     -- Create new macro
     if GetNumMacros(false) < MAX_ACCOUNT_MACROS then
         local defaultMountID = 1589 -- Renewed Proto-Drake
-        local name, _, icon, _, isUsable = C_MountJournal.GetMountInfoByID(defaultMountID)
+        -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
+        local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(defaultMountID)
         if isUsable then
             local macroBodyStr = "#showtooltip\n/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n/run CYRandomMount_InstantUpdate()\n"
             local macroIndex = CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
@@ -126,7 +127,8 @@ local function GetRandomMountFromList(mountList, excludeMountID)
     local usableMounts = {}
     if mountList and #mountList > 0 then
         for _, mountID in ipairs(mountList) do
-            local _, _, _, _, isUsable = C_MountJournal.GetMountInfoByID(mountID)
+            -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
+            local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
             if isUsable then
                 table.insert(usableMounts, mountID)
             elseif ShowDebug then
@@ -200,7 +202,9 @@ local function UpdateMountMacroByZone()
         return
     end
 
-    if IsIndoors and IsIndoors() then
+    -- Use C_Map API instead of deprecated IsIndoors
+    local isIndoors = IsPlayerIndoors()
+    if isIndoors then
         if ShowDebug then print("CYRandomMount: Indoors, skipping macro update.") end
         return
     end
@@ -214,7 +218,8 @@ local function UpdateMountMacroByZone()
         print("CYRandomMount: Current mount ID: " .. tostring(currentMountID))
     end
 
-    local isFlyable = IsFlyableArea and IsFlyableArea() or false
+    -- Use C_Map.CanPlayerUseFlyingMount() instead of deprecated IsFlyableArea()
+    local isFlyable = C_Map.CanPlayerUseFlyingMount() or false
     local mountID
     
     if isFlyable then
@@ -233,7 +238,8 @@ local function UpdateMountMacroByZone()
         end
     end
 
-    local name, _, icon = C_MountJournal.GetMountInfoByID(mountID)
+    -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
+    local name, spellID, icon = C_MountJournal.GetMountInfoByID(mountID)
     if name then
         local macroBodyStr = "#showtooltip\n/run if IsMounted() then Dismount() else C_MountJournal.SummonByID("..mountID..") end\n/run CYRandomMount_InstantUpdate()\n"
         SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
