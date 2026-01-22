@@ -1,5 +1,11 @@
 # Release Notes
 
+This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
+
+## [2.4.0]
+### Changed
+- Updated TOC interface version to 120000 for WoW 12.0 compatibility
+
 ## [2.3.1]
 ### Fixed
 - Fixed a bug preventing mount list changes in non-English languages.
