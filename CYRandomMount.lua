@@ -202,8 +202,8 @@ local function UpdateMountMacroByZone()
         return
     end
 
-    -- Use C_Map API instead of deprecated IsIndoors
-    local isIndoors = IsPlayerIndoors()
+    -- Use IsIndoors to check if player is indoors
+    local isIndoors = IsIndoors()
     if isIndoors then
         if ShowDebug then print("CYRandomMount: Indoors, skipping macro update.") end
         return
@@ -218,8 +218,8 @@ local function UpdateMountMacroByZone()
         print("CYRandomMount: Current mount ID: " .. tostring(currentMountID))
     end
 
-    -- Use C_Map.CanPlayerUseFlyingMount() instead of deprecated IsFlyableArea()
-    local isFlyable = C_Map.CanPlayerUseFlyingMount() or false
+    -- Check if the current zone allows flying
+    local isFlyable = IsFlyableArea() or false
     local mountID
     
     if isFlyable then
