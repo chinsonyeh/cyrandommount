@@ -2,6 +2,14 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.4.4]
+### Added
+- Added `/stopcasting` command to macro - pressing the macro while casting/channeling will now stop the cast before executing mount action
+- Added mount name to #showtooltip which will show grayed out icon when the mount is not usable
+
+### Fixed
+- Fixed a bug where macro script text may leak into chat.
+
 ## [2.4.3]
 ### Fixed
 - Fixed incorrect WoW API function calls that prevented mount selection from updating
