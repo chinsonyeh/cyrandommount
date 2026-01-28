@@ -87,7 +87,7 @@ local function CreateMountMacro(force)
         -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
         local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(defaultMountID)
         if isUsable then
-            local macroBodyStr = "#showtooltip\n/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n/run CYRandomMount_InstantUpdate()\n"
+            local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/run if IsMounted() then Dismount() else C_MountJournal.SummonByID(1589) end\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
             local macroIndex = CreateMacro(macroName, icon or macroIcon, macroBodyStr, false)
             if not macroIndex or macroIndex == 0 then
                 print("CYRandomMount: Failed to create macro '" .. macroName .. "'.")
@@ -96,7 +96,7 @@ local function CreateMountMacro(force)
             end
         else
             -- Fallback
-            local macroBodyStr = "#showtooltip\n/dismount [mounted]\n/cast [nomounted] CYRandomMount\n/run CYRandomMount_InstantUpdate()\n"
+            local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/dismount [mounted]\n/cast [nomounted] CYRandomMount\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
             CreateMacro(macroName, macroIcon, macroBodyStr, false)
         end
     end
@@ -194,10 +194,10 @@ local function UpdateMountMacroByZone()
         -- Other locales can be added here
         end
         
-        local macroBodyStr = "#showtooltip\n/dismount [mounted]\n/cast [nomounted] "..mountName.."\n/run CYRandomMount_InstantUpdate()\n"
+        local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/dismount [mounted]\n/cast [nomounted] "..mountName.."\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
         local macroIndex = GetMacroIndexByName(macroName)
         if macroIndex then
-            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, false)
+            SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, 1, 1)
         end
         return
     end
@@ -241,8 +241,8 @@ local function UpdateMountMacroByZone()
     -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
     local name, spellID, icon = C_MountJournal.GetMountInfoByID(mountID)
     if name then
-        local macroBodyStr = "#showtooltip\n/run if IsMounted() then Dismount() else C_MountJournal.SummonByID("..mountID..") end\n/run CYRandomMount_InstantUpdate()\n"
-        SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, false)
+        local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/run if IsMounted() then Dismount() else C_MountJournal.SummonByID("..mountID..") end\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
+        SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, 1, 1)
         if ShowDebug then
             print("CYRandomMount: Updated macro with mount ID: " .. tostring(mountID))
         end
