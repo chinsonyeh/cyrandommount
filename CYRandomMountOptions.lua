@@ -41,6 +41,8 @@ local function SetLocalization(loc)
     L["GROUND_MOUNTS_TITLE"] = "Ground Mounts"
     L["LANGUAGE_TITLE"] = "Language:"
     L["DRAG_MACRO_TOOLTIP"] = "Drag this macro to your action bar."
+    L["SELECT_ALL"] = "Select All"
+    L["DESELECT_ALL"] = "Deselect All"
     
     -- Traditional Chinese
     if actualLoc == "zhTW" then
@@ -58,6 +60,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "地面坐騎"
         L["LANGUAGE_TITLE"] = "語言:"
         L["DRAG_MACRO_TOOLTIP"] = "將此巨集拖曳至快捷列。"
+        L["SELECT_ALL"] = "全選"
+        L["DESELECT_ALL"] = "全不選"
     -- Simplified Chinese
     elseif actualLoc == "zhCN" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -74,6 +78,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "地面坐骑"
         L["LANGUAGE_TITLE"] = "语言:"
         L["DRAG_MACRO_TOOLTIP"] = "将此宏拖动到动作条。"
+        L["SELECT_ALL"] = "全选"
+        L["DESELECT_ALL"] = "全不选"
     -- French
     elseif actualLoc == "frFR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -90,6 +96,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "Montures terrestres"
         L["LANGUAGE_TITLE"] = "Langue:"
         L["DRAG_MACRO_TOOLTIP"] = "Faites glisser cette macro sur votre barre d'action."
+        L["SELECT_ALL"] = "Tout sélectionner"
+        L["DESELECT_ALL"] = "Tout désélectionner"
     -- German
     elseif actualLoc == "deDE" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -106,6 +114,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "Boden-Mounts"
         L["LANGUAGE_TITLE"] = "Sprache:"
         L["DRAG_MACRO_TOOLTIP"] = "Zieh dieses Makro in deine Aktionsleiste."
+        L["SELECT_ALL"] = "Alle auswählen"
+        L["DESELECT_ALL"] = "Alle abwählen"
     -- Spanish
     elseif actualLoc == "esES" or actualLoc == "esMX" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -122,6 +132,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "Monturas terrestres"
         L["LANGUAGE_TITLE"] = "Idioma:"
         L["DRAG_MACRO_TOOLTIP"] = "Arrastra este macro a tu barra de acción."
+        L["SELECT_ALL"] = "Seleccionar todo"
+        L["DESELECT_ALL"] = "Deseleccionar todo"
     -- Portuguese
     elseif actualLoc == "ptBR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -138,6 +150,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "Montarias terrestres"
         L["LANGUAGE_TITLE"] = "Idioma:"
         L["DRAG_MACRO_TOOLTIP"] = "Arraste este macro para a sua barra de ação."
+        L["SELECT_ALL"] = "Selecionar tudo"
+        L["DESELECT_ALL"] = "Desselecionar tudo"
     -- Russian
     elseif actualLoc == "ruRU" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -154,6 +168,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "Наземный транспорт"
         L["LANGUAGE_TITLE"] = "Язык:"
         L["DRAG_MACRO_TOOLTIP"] = "Перетащите этот макрос на вашу панель действий."
+        L["SELECT_ALL"] = "Выбрать все"
+        L["DESELECT_ALL"] = "Снять все"
     -- Korean
     elseif actualLoc == "koKR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -170,6 +186,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "지상 탈것"
         L["LANGUAGE_TITLE"] = "언어:"
         L["DRAG_MACRO_TOOLTIP"] = "이 매크로를 행동 단축바로 끌어다 놓으세요."
+        L["SELECT_ALL"] = "모두 선택"
+        L["DESELECT_ALL"] = "모두 선택 해제"
     -- Japanese
     elseif actualLoc == "jaJP" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -186,6 +204,8 @@ local function SetLocalization(loc)
         L["GROUND_MOUNTS_TITLE"] = "地上マウント"
         L["LANGUAGE_TITLE"] = "言語:"
         L["DRAG_MACRO_TOOLTIP"] = "このマクロをアクションバーにドラッグしてください。"
+        L["SELECT_ALL"] = "すべて選択"
+        L["DESELECT_ALL"] = "すべて選択解除"
     end
 end
 
@@ -641,6 +661,46 @@ function CYRandomMountOptions.CreateOptionsPanel()
             title:SetPoint("TOPLEFT", 4, -4)
             title:SetText(label)
             box.title = title
+
+            -- Create "Select All" button
+            local selectAllBtn = CreateFrame("Button", nil, box, "UIPanelButtonTemplate")
+            selectAllBtn:SetSize(60, 20)
+            selectAllBtn:SetPoint("TOPRIGHT", box, "TOPRIGHT", -70, -2)
+            selectAllBtn:SetText(GetLocalizedText("SELECT_ALL"))
+            selectAllBtn:SetScript("OnClick", function()
+                if box.checks then
+                    for _, check in ipairs(box.checks) do
+                        if check:IsShown() then
+                            check:SetChecked(true)
+                        end
+                    end
+                    if isFlying then
+                        SaveSelectedFlyingMounts()
+                    else
+                        SaveSelectedGroundMounts()
+                    end
+                end
+            end)
+
+            -- Create "Deselect All" button
+            local deselectAllBtn = CreateFrame("Button", nil, box, "UIPanelButtonTemplate")
+            deselectAllBtn:SetSize(60, 20)
+            deselectAllBtn:SetPoint("RIGHT", selectAllBtn, "LEFT", -4, 0)
+            deselectAllBtn:SetText(GetLocalizedText("DESELECT_ALL"))
+            deselectAllBtn:SetScript("OnClick", function()
+                if box.checks then
+                    for _, check in ipairs(box.checks) do
+                        if check:IsShown() then
+                            check:SetChecked(false)
+                        end
+                    end
+                    if isFlying then
+                        SaveSelectedFlyingMounts()
+                    else
+                        SaveSelectedGroundMounts()
+                    end
+                end
+            end)
 
             if #mounts > 14 then
                 scrollFrame = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")

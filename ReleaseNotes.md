@@ -2,6 +2,10 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.5.0]
+### Added
+- Added "Select All" and "Deselect All" buttons above the flying and ground mount lists for easier mount selection.
+
 ## [2.4.4]
 ### Added
 - Added `/stopcasting` command to macro - pressing the macro while casting/channeling will now stop the cast before executing mount action

@@ -11,7 +11,7 @@ CYRandomMount is a World of Warcraft addon that intelligently manages mount summ
    - **Mode 2:** The macro will update and select a new random mount automatically at a fixed interval (Refresh Time).
 - **Mount Variety Guarantee:** When selecting the next random mount, the addon excludes the currently selected mount from the pool (if more than one mount is available), ensuring you get a different mount each time you summon.
 - **Per-Character Mount Lists:** Choose between character-specific mount lists or account-wide shared lists for maximum flexibility across your characters.
-- **Favorite Mount Selection:** Choose which flying and ground mounts to include in the random selection from your collected mounts.
+- **Favorite Mount Selection:** Choose which flying and ground mounts to include in the random selection from your collected mounts. Use the "Select All" and "Deselect All" buttons for quick selection.
 - **Custom Refresh Interval:** Set how often (in seconds) the macro updates to reflect your current zone's flyability (5-30 seconds).
 - **Draggable Icon:** A draggable icon in the options UI that can be dragged to your action bar for quick access.
 - **Settings Panel:** Easily configure your preferences through the in-game settings interface.
