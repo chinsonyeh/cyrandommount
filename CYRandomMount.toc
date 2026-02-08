@@ -2,8 +2,9 @@
 ## Title: CYRandomMount
 ## Notes: Intelligent random mount summoning with variety guarantee. Supports character-specific and account-wide mount lists, automatic zone detection, and special area handling.
 ## Author: chinsonyeh
-## Version: 2.6.0
+## Version: 2.6.1
 ## SavedVariables: CYRandomMountDB
+## IconTexture: Interface\Icons\inv_horse3saddle003_brown
 
 CYRandomMountOptions.lua
 CYRandomMount.lua

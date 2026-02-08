@@ -2,6 +2,10 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.6.1]
+### Fixed
+- Fixed icon showed in Addon list
+
 ## [2.6.0]
 ### Added
 - Added search textboxes below flying and ground mount lists for quick mount filtering by name
