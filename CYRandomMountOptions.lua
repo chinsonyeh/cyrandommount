@@ -43,6 +43,7 @@ local function SetLocalization(loc)
     L["DRAG_MACRO_TOOLTIP"] = "Drag this macro to your action bar."
     L["SELECT_ALL"] = "Select All"
     L["DESELECT_ALL"] = "Deselect All"
+    L["SEARCH_MOUNT"] = "Search Mount..."
     
     -- Traditional Chinese
     if actualLoc == "zhTW" then
@@ -62,6 +63,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "將此巨集拖曳至快捷列。"
         L["SELECT_ALL"] = "全選"
         L["DESELECT_ALL"] = "全不選"
+        L["SEARCH_MOUNT"] = "搜尋座騎..."
     -- Simplified Chinese
     elseif actualLoc == "zhCN" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -80,6 +82,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "将此宏拖动到动作条。"
         L["SELECT_ALL"] = "全选"
         L["DESELECT_ALL"] = "全不选"
+        L["SEARCH_MOUNT"] = "搜索坐骑..."
     -- French
     elseif actualLoc == "frFR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -98,6 +101,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "Faites glisser cette macro sur votre barre d'action."
         L["SELECT_ALL"] = "Tout sélectionner"
         L["DESELECT_ALL"] = "Tout désélectionner"
+        L["SEARCH_MOUNT"] = "Rechercher une monture..."
     -- German
     elseif actualLoc == "deDE" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -116,6 +120,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "Zieh dieses Makro in deine Aktionsleiste."
         L["SELECT_ALL"] = "Alle auswählen"
         L["DESELECT_ALL"] = "Alle abwählen"
+        L["SEARCH_MOUNT"] = "Reittier suchen..."
     -- Spanish
     elseif actualLoc == "esES" or actualLoc == "esMX" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -134,6 +139,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "Arrastra este macro a tu barra de acción."
         L["SELECT_ALL"] = "Seleccionar todo"
         L["DESELECT_ALL"] = "Deseleccionar todo"
+        L["SEARCH_MOUNT"] = "Buscar montura..."
     -- Portuguese
     elseif actualLoc == "ptBR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -152,6 +158,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "Arraste este macro para a sua barra de ação."
         L["SELECT_ALL"] = "Selecionar tudo"
         L["DESELECT_ALL"] = "Desselecionar tudo"
+        L["SEARCH_MOUNT"] = "Buscar montaria..."
     -- Russian
     elseif actualLoc == "ruRU" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -170,6 +177,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "Перетащите этот макрос на вашу панель действий."
         L["SELECT_ALL"] = "Выбрать все"
         L["DESELECT_ALL"] = "Снять все"
+        L["SEARCH_MOUNT"] = "Поиск транспорта..."
     -- Korean
     elseif actualLoc == "koKR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -188,6 +196,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "이 매크로를 행동 단축바로 끌어다 놓으세요."
         L["SELECT_ALL"] = "모두 선택"
         L["DESELECT_ALL"] = "모두 선택 해제"
+        L["SEARCH_MOUNT"] = "탈것 검색..."
     -- Japanese
     elseif actualLoc == "jaJP" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -206,6 +215,7 @@ local function SetLocalization(loc)
         L["DRAG_MACRO_TOOLTIP"] = "このマクロをアクションバーにドラッグしてください。"
         L["SELECT_ALL"] = "すべて選択"
         L["DESELECT_ALL"] = "すべて選択解除"
+        L["SEARCH_MOUNT"] = "マウントを検索..."
     end
 end
 
@@ -615,6 +625,8 @@ function CYRandomMountOptions.CreateOptionsPanel()
             if listModeRadio2 and listModeRadio2.text then listModeRadio2.text:SetText(GetLocalizedText("ACCOUNT_SHARED")) end
             if flyingBox and flyingBox.title then flyingBox.title:SetText(GetLocalizedText("FLYING_MOUNTS_TITLE")) end
             if groundBox and groundBox.title then groundBox.title:SetText(GetLocalizedText("GROUND_MOUNTS_TITLE")) end
+            if flyingBox and flyingBox.searchBox then flyingBox.searchBox:SetText("") end
+            if groundBox and groundBox.searchBox then groundBox.searchBox:SetText("") end
         end
         
         -- Set initial value
@@ -705,7 +717,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             if #mounts > 14 then
                 scrollFrame = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
                 scrollFrame:SetPoint("TOPLEFT", box, "TOPLEFT", 0, -24)
-                scrollFrame:SetSize(280, 336)
+                scrollFrame:SetSize(280, 310)
                 scrollChild = CreateFrame("Frame", nil, scrollFrame)
                 scrollChild:SetSize(260, #mounts * 24 + 8)
                 scrollFrame:SetScrollChild(scrollChild)
@@ -754,6 +766,76 @@ function CYRandomMountOptions.CreateOptionsPanel()
                     end
                 end)
             end
+
+            -- Create search box below the mount list
+            local searchBox = CreateFrame("EditBox", nil, box, "InputBoxTemplate")
+            searchBox:SetSize(260, 20)
+            if #mounts > 14 then
+                searchBox:SetPoint("TOPLEFT", scrollFrame, "BOTTOMLEFT", 4, -8)
+            else
+                searchBox:SetPoint("TOPLEFT", box, "BOTTOMLEFT", 4, 8)
+            end
+            searchBox:SetAutoFocus(false)
+            searchBox:SetMaxLetters(50)
+            searchBox:SetFontObject("ChatFontNormal")
+            
+            -- Add placeholder text
+            local placeholderText = searchBox:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+            placeholderText:SetPoint("LEFT", searchBox, "LEFT", 0, 0)
+            placeholderText:SetText(GetLocalizedText("SEARCH_MOUNT"))
+            searchBox.placeholderText = placeholderText
+            
+            -- Function to filter mounts based on search text
+            local function FilterMounts(searchText)
+                searchText = string.lower(searchText or "")
+                for i, check in ipairs(box.checks) do
+                    if searchText == "" then
+                        check:Enable()
+                        check.textLabel:SetTextColor(1, 1, 1)
+                        check.icon:SetDesaturated(false)
+                        check.icon:SetAlpha(1.0)
+                    else
+                        local mountName = string.lower(check.textLabel:GetText() or "")
+                        if string.find(mountName, searchText, 1, true) then
+                            check:Enable()
+                            check.textLabel:SetTextColor(1, 1, 1)
+                            check.icon:SetDesaturated(false)
+                            check.icon:SetAlpha(1.0)
+                        else
+                            check:Disable()
+                            check.textLabel:SetTextColor(0.5, 0.5, 0.5)
+                            check.icon:SetDesaturated(true)
+                            check.icon:SetAlpha(0.5)
+                        end
+                    end
+                end
+            end
+            
+            searchBox:SetScript("OnTextChanged", function(self)
+                local text = self:GetText()
+                if text == "" then
+                    placeholderText:Show()
+                else
+                    placeholderText:Hide()
+                end
+                FilterMounts(text)
+            end)
+            
+            searchBox:SetScript("OnEditFocusGained", function(self)
+                placeholderText:Hide()
+            end)
+            
+            searchBox:SetScript("OnEditFocusLost", function(self)
+                if self:GetText() == "" then
+                    placeholderText:Show()
+                end
+            end)
+            
+            searchBox:SetScript("OnEscapePressed", function(self)
+                self:ClearFocus()
+            end)
+            
+            box.searchBox = searchBox
             return box
         end
 

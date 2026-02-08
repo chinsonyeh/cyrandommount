@@ -2,6 +2,12 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.6.0]
+### Added
+- Added search textboxes below flying and ground mount lists for quick mount filtering by name
+  - Non-matching mounts are grayed out, showing disabled checkbox, desaturated icon, and dimmed text
+  - Added multi-language support for search placeholder text (supports all existing languages: Traditional Chinese, Simplified Chinese, English, French, German, Spanish, Portuguese, Russian, Korean, and Japanese)
+
 ## [2.5.0]
 ### Added
 - Added "Select All" and "Deselect All" buttons above the flying and ground mount lists for easier mount selection.
