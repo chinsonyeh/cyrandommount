@@ -189,6 +189,9 @@ end
 local function UpdateMountMacroByZone()
     if MacroFrame and MacroFrame:IsShown() then return end
 
+    local macroIndex = GetMacroIndexByName(macroName)
+    if not macroIndex then return end
+
     local zoneID = C_Map.GetBestMapForUnit("player")
     if zoneID == 2346 then -- Undermine
         local locale = GetLocale()
@@ -199,7 +202,6 @@ local function UpdateMountMacroByZone()
         end
         
         local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/dismount [mounted]\n/cast [nomounted] "..mountName.."\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
-        local macroIndex = GetMacroIndexByName(macroName)
         if macroIndex then
             SafeEditMacro(macroIndex, macroName, macroIcon, macroBodyStr, 1, 1)
         end
@@ -207,9 +209,11 @@ local function UpdateMountMacroByZone()
     end
 
     local isIndoors = IsIndoors()
-    local macroIndex = GetMacroIndexByName(macroName)
-    if not macroIndex then return end
-
+    if isIndoors then
+        if ShowDebug then print("CYRandomMount: Indoors, skipping macro update.") end
+        return
+    end
+        
     -- Get current mount ID to exclude it from next selection
     local currentMountID = GetCurrentMountIDFromMacro()
     if ShowDebug and currentMountID then
