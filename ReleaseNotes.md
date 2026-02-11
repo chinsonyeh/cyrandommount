@@ -2,6 +2,20 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.6.2]
+### Added
+- Added automatic macro recreation: The addon now checks every 5 seconds if the macro exists and recreates it if missing
+- Added automatic macro update when transitioning from indoors to outdoors: The addon polls every 0.5 seconds to detect when players leave indoor areas and updates the macro accordingly
+
+### Fixed
+- Fixed macro detection logic: Added proper check for `macroIndex == 0` to prevent treating invalid macro index as valid
+- Fixed indoor status handling: Improved logic to prevent macro updates when indoors
+- Fixed Undermine zone handling: Ensured macro updates are skipped properly when the macro doesn't exist
+
+### Changed
+- Updated TOC interface version to 120001 for latest WoW patch compatibility
+- Refactored indoor/outdoor detection to use persistent status tracking
+
 ## [2.6.1]
 ### Fixed
 - Fixed icon showed in Addon list
