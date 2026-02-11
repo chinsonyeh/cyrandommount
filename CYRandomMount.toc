@@ -1,4 +1,4 @@
-## Interface: 120000
+## Interface: 120001
 ## Title: CYRandomMount
 ## Notes: Intelligent random mount summoning with variety guarantee. Supports character-specific and account-wide mount lists, automatic zone detection, and special area handling.
 ## Author: chinsonyeh

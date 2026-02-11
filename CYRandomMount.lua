@@ -5,6 +5,9 @@ local DefaultMacroName = "CYRandomMount"
 local isAddonLoaded = false
 local isPlayerLoggedIn = false
 local optionsLoaded = false
+local lastIndoorStatus = nil
+
+local waitSecondsforIndoorCheck = 0.5 -- Time to wait before checking indoor status after zone change
 
 local ShowDebug = false -- Set to true to enable debug messages
 
@@ -62,6 +65,7 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         TryLoadOptions()
     elseif event == "PLAYER_LOGIN" then
         isPlayerLoggedIn = true
+        lastIndoorStatus = IsIndoors()
         TryLoadOptions()
     end
 end)
@@ -202,13 +206,7 @@ local function UpdateMountMacroByZone()
         return
     end
 
-    -- Use IsIndoors to check if player is indoors
     local isIndoors = IsIndoors()
-    if isIndoors then
-        if ShowDebug then print("CYRandomMount: Indoors, skipping macro update.") end
-        return
-    end
-
     local macroIndex = GetMacroIndexByName(macroName)
     if not macroIndex then return end
 
@@ -218,19 +216,27 @@ local function UpdateMountMacroByZone()
         print("CYRandomMount: Current mount ID: " .. tostring(currentMountID))
     end
 
-    -- Check if the current zone allows flying
-    local isFlyable = IsFlyableArea() or false
     local mountID
-    
-    if isFlyable then
-        if ShowDebug then print("CYRandomMount: Zone is flyable, getting flying mount.") end
-        mountID = GetRandomSelectedFlyingMount(currentMountID)
-    else
-        if ShowDebug then print("CYRandomMount: Zone is not flyable, getting ground mount.") end
+    if isIndoors then
+        if ShowDebug then print("CYRandomMount: Indoors, getting ground mount.") end
         mountID = GetRandomSelectedGroundMount(currentMountID)
+    else
+        local isFlyable = IsFlyableArea() or false
+        if isFlyable then
+            if ShowDebug then print("CYRandomMount: Zone is flyable, getting flying mount.") end
+            mountID = GetRandomSelectedFlyingMount(currentMountID)
+        else
+            if ShowDebug then print("CYRandomMount: Zone is not flyable, getting ground mount.") end
+            mountID = GetRandomSelectedGroundMount(currentMountID)
+        end
     end
 
     if not mountID then -- Fallback if no mount is selected/usable
+        -- If indoors, we only want to try ground mounts.
+        if isIndoors then
+            if ShowDebug then print("CYRandomMount: No usable selected ground mounts found for indoors.") end
+            return
+        end
         mountID = GetRandomSelectedFlyingMount(currentMountID) -- Try a flying one as they can run on the ground
         if not mountID then 
             if ShowDebug then print("CYRandomMount: No usable selected mounts found.") end
@@ -296,5 +302,25 @@ timer:SetScript("OnUpdate", function(self, elapsed)
     if self.elapsed >= refreshTime then
         UpdateMountMacroByZone()
         self.elapsed = 0
+    end
+end)
+
+local pollFrame = CreateFrame("Frame")
+pollFrame.wait = 0
+pollFrame:SetScript("OnUpdate", function(self, elapsed)
+    if not isPlayerLoggedIn then return end
+
+    self.wait = self.wait + elapsed
+    if self.wait < waitSecondsforIndoorCheck then return end -- Poll every ${waitSecondsforIndoorCheck} seconds
+    self.wait = 0
+
+    local currentStatus = IsIndoors()
+    if currentStatus ~= lastIndoorStatus then
+        -- Only trigger update when going from Indoor (true) to Outdoor (false)
+        if lastIndoorStatus == true and currentStatus == false then
+            if ShowDebug then print("CYRandomMount: Player left indoors, updating macro.") end
+            UpdateMountMacroByZone()
+        end
+        lastIndoorStatus = currentStatus
     end
 end)
