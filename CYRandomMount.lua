@@ -27,7 +27,7 @@ local function TryLoadOptions()
                 print("CYRandomMount: Migrating macro from '" .. db.Default.macroName .. "' to '" .. DefaultMacroName .. "'")
             end
             local oldMacroIndex = GetMacroIndexByName(db.Default.macroName)
-            if oldMacroIndex then
+            if oldMacroIndex and oldMacroIndex ~= 0 then
                 local success, err = pcall(DeleteMacro, oldMacroIndex)
                 if ShowDebug then
                     if success then
@@ -114,7 +114,7 @@ end)
 
 local function GetCurrentMountIDFromMacro()
     local macroIndex = GetMacroIndexByName(macroName)
-    if not macroIndex then return nil end
+    if not macroIndex or macroIndex == 0 then return nil end
     
     local _, _, body = GetMacroInfo(macroIndex)
     if body then
@@ -190,7 +190,7 @@ local function UpdateMountMacroByZone()
     if MacroFrame and MacroFrame:IsShown() then return end
 
     local macroIndex = GetMacroIndexByName(macroName)
-    if not macroIndex then return end
+    if not macroIndex or macroIndex == 0 then return end
 
     local zoneID = C_Map.GetBestMapForUnit("player")
     if zoneID == 2346 then -- Undermine
@@ -311,20 +311,33 @@ end)
 
 local pollFrame = CreateFrame("Frame")
 pollFrame.wait = 0
+pollFrame.macroCheckWait = 0
 pollFrame:SetScript("OnUpdate", function(self, elapsed)
     if not isPlayerLoggedIn then return end
 
+    -- Check indoor/outdoor status every 0.5 seconds
     self.wait = self.wait + elapsed
-    if self.wait < waitSecondsforIndoorCheck then return end -- Poll every ${waitSecondsforIndoorCheck} seconds
-    self.wait = 0
-
-    local currentStatus = IsIndoors()
-    if currentStatus ~= lastIndoorStatus then
-        -- Only trigger update when going from Indoor (true) to Outdoor (false)
-        if lastIndoorStatus == true and currentStatus == false then
-            if ShowDebug then print("CYRandomMount: Player left indoors, updating macro.") end
-            UpdateMountMacroByZone()
+    if self.wait >= waitSecondsforIndoorCheck then
+        self.wait = 0
+        local currentStatus = IsIndoors()
+        if currentStatus ~= lastIndoorStatus then
+            -- Only trigger update when going from Indoor (true) to Outdoor (false)
+            if lastIndoorStatus == true and currentStatus == false then
+                if ShowDebug then print("CYRandomMount: Player left indoors, updating macro.") end
+                UpdateMountMacroByZone()
+            end
+            lastIndoorStatus = currentStatus
         end
-        lastIndoorStatus = currentStatus
+    end
+
+    -- Check macro existence every 5 seconds
+    self.macroCheckWait = self.macroCheckWait + elapsed
+    if self.macroCheckWait >= 5 then
+        self.macroCheckWait = 0
+        local macroIndex = GetMacroIndexByName(macroName)
+        if not macroIndex or macroIndex == 0 then
+            if ShowDebug then print("CYRandomMount: Macro not found, creating...") end
+            CreateMountMacro()
+        end
     end
 end)
