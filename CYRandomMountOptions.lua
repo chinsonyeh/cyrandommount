@@ -44,6 +44,8 @@ local function SetLocalization(loc)
     L["SELECT_ALL"] = "Select All"
     L["DESELECT_ALL"] = "Deselect All"
     L["SEARCH_MOUNT"] = "Search Mount..."
+    L["DISMOUNT_ON_FLY_LABEL"] = "Dismount based on flight status"
+    L["DISMOUNT_ON_FLY_TOOLTIP"] = "If checked, pressing the macro while mounted will only dismount you if you are not flying."
     
     -- Traditional Chinese
     if actualLoc == "zhTW" then
@@ -64,6 +66,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "全選"
         L["DESELECT_ALL"] = "全不選"
         L["SEARCH_MOUNT"] = "搜尋座騎..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "根據飛行狀態決定是否解除坐騎"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "如果勾選，騎乘時按下巨集只會在非飛行狀態下解除坐騎。"
     -- Simplified Chinese
     elseif actualLoc == "zhCN" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -83,6 +87,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "全选"
         L["DESELECT_ALL"] = "全不选"
         L["SEARCH_MOUNT"] = "搜索坐骑..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "根据飞行状态决定是否解除坐骑"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "如果勾选，骑乘时按下宏只会在非飞行状态下解除坐骑。"
     -- French
     elseif actualLoc == "frFR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -231,6 +237,7 @@ local panel, refreshTimeSlider, refreshTimeText, flyingBox, groundBox
 local RefreshTime = 10
 local UpdateMacroMode = 1 -- 1: Update each time call dismount, 2: Update periodly
 local ListMode = 1 -- 1: Character specific list, 2: Use shared list
+local DismountOnFly = false
 local ShowDebug = false -- Set to true to enable debug messages
 local macroName = "CYRandomMount"
 
@@ -247,6 +254,8 @@ CYRandomMountOptions.UpdateMacroMode = function() return UpdateMacroMode end
 CYRandomMountOptions.SetUpdateMacroMode = function(v) UpdateMacroMode = v end
 CYRandomMountOptions.ListMode = function() return ListMode end
 CYRandomMountOptions.SetListMode = function(v) ListMode = v end
+CYRandomMountOptions.DismountOnFly = function() return DismountOnFly end
+CYRandomMountOptions.SetDismountOnFly = function(v) DismountOnFly = v end
 
 
 local function GetCharacterKey()
@@ -281,6 +290,7 @@ local function InitCYRandomMountDB()
                 RefreshTime = oldData.RefreshTime or 10,
                 UpdateMacroMode = oldData.UpdateMacroMode or 1,
                 ListMode = 1, -- Default to character-specific
+                DismountOnFly = false,
                 FlyingMounts = oldData.FlyingMounts or {},
                 GroundMounts = oldData.GroundMounts or {},
                 availableMountsCount = oldData.availableMountsCount or 0,
@@ -302,6 +312,7 @@ local function InitCYRandomMountDB()
         end
         -- New characters default to shared list (ListMode = 2)
         CYRandomMountDB[charKey].ListMode = 2
+        CYRandomMountDB[charKey].DismountOnFly = false
     end
 end
 
@@ -347,6 +358,7 @@ local function LoadSettings()
     RefreshTime = charProfile.RefreshTime
     UpdateMacroMode = charProfile.UpdateMacroMode
     ListMode = charProfile.ListMode
+    DismountOnFly = charProfile.DismountOnFly or false
 
     refreshTimeSlider:SetValue(RefreshTime)
     refreshTimeText:SetText(tostring(RefreshTime))
@@ -356,6 +368,8 @@ local function LoadSettings()
 
     if panel.listModeRadio1 then panel.listModeRadio1:SetChecked(ListMode == 1) end
     if panel.listModeRadio2 then panel.listModeRadio2:SetChecked(ListMode == 2) end
+
+    if panel.dismountOnFlyCheck then panel.dismountOnFlyCheck:SetChecked(DismountOnFly) end
 
     -- Load mount lists from the active profile (character or default)
     if currentProfile.FlyingMounts and flyingBox and flyingBox.checks then
@@ -613,6 +627,27 @@ function CYRandomMountOptions.CreateOptionsPanel()
         panel.listModeRadio1 = listModeRadio1
         panel.listModeRadio2 = listModeRadio2
 
+        -- Add Dismount on Fly checkbox
+        local dismountOnFlyCheck = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
+        dismountOnFlyCheck:SetPoint("TOPLEFT", listModeRadio2, "BOTTOMLEFT", 0, -8)
+        dismountOnFlyCheck.text = dismountOnFlyCheck:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        dismountOnFlyCheck.text:SetPoint("LEFT", dismountOnFlyCheck, "RIGHT", 4, 0)
+        dismountOnFlyCheck.text:SetText(GetLocalizedText("DISMOUNT_ON_FLY_LABEL"))
+        dismountOnFlyCheck:SetScript("OnClick", function(self)
+            DismountOnFly = self:GetChecked()
+            local charKey = GetCharacterKey()
+            CYRandomMountDB[charKey].DismountOnFly = DismountOnFly
+        end)
+        dismountOnFlyCheck:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(GetLocalizedText("DISMOUNT_ON_FLY_TOOLTIP"), nil, nil, nil, nil, true)
+            GameTooltip:Show()
+        end)
+        dismountOnFlyCheck:SetScript("OnLeave", function()
+            GameTooltip:Hide()
+        end)
+        panel.dismountOnFlyCheck = dismountOnFlyCheck
+
         local function UpdateTexts()
             if resetMacroLabel then resetMacroLabel:SetText(GetLocalizedText("RESET_MACRO_LABEL")) end
             if resetMacroButton then resetMacroButton:SetText(GetLocalizedText("RESET_MACRO_BUTTON")) end
@@ -623,6 +658,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             if listModeTitle then listModeTitle:SetText(GetLocalizedText("LIST_MODE_TITLE")) end
             if listModeRadio1 and listModeRadio1.text then listModeRadio1.text:SetText(GetLocalizedText("CHARACTER_SPECIFIC")) end
             if listModeRadio2 and listModeRadio2.text then listModeRadio2.text:SetText(GetLocalizedText("ACCOUNT_SHARED")) end
+            if dismountOnFlyCheck and dismountOnFlyCheck.text then dismountOnFlyCheck.text:SetText(GetLocalizedText("DISMOUNT_ON_FLY_LABEL")) end
             if flyingBox and flyingBox.title then flyingBox.title:SetText(GetLocalizedText("FLYING_MOUNTS_TITLE")) end
             if groundBox and groundBox.title then groundBox.title:SetText(GetLocalizedText("GROUND_MOUNTS_TITLE")) end
             if flyingBox and flyingBox.searchBox then flyingBox.searchBox:SetText("") end
@@ -897,7 +933,7 @@ function CYRandomMountOptions.CreateOptionsPanel()
             
             -- Create new boxes with current mount list
             flyingBox = CreateMountBox(flyingMounts, panel, GetLocalizedText("FLYING_MOUNTS_TITLE"), true)
-            flyingBox:SetPoint("TOPLEFT", listModeRadio2, "BOTTOMLEFT", -20, -16)
+            flyingBox:SetPoint("TOPLEFT", dismountOnFlyCheck, "BOTTOMLEFT", -20, -16)
 
             groundBox = CreateMountBox(groundMounts, panel, GetLocalizedText("GROUND_MOUNTS_TITLE"), false)
             groundBox:SetPoint("TOPLEFT", flyingBox, "TOPRIGHT", 16, 0)
