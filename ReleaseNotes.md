@@ -2,6 +2,11 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.7.0]
+### Added
+- Added "Dismount based on flight status" option (DismountOnFly): When enabled, pressing the macro while mounted will only dismount you if you are not flying
+  - Hold Ctrl while pressing the macro to force dismount even while flying
+
 ## [2.6.2]
 ### Added
 - Added automatic macro recreation: The addon now checks every 5 seconds if the macro exists and recreates it if missing
