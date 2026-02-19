@@ -95,8 +95,8 @@ local function CreateMountMacro(force)
             local dismountOnFly = CYRandomMountDB and CYRandomMountDB[charKey] and CYRandomMountDB[charKey].DismountOnFly
             
             local dismountCondition = "IsMounted()"
-            if not dismountOnFly then
-                dismountCondition = dismountCondition .. " and not IsFlying()"
+            if dismountOnFly then
+                dismountCondition = dismountCondition .. " and (IsControlKeyDown() or not IsFlying())"
             end
 
             local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/run if " .. dismountCondition .. " then Dismount() end\n/run if not IsMounted() then C_MountJournal.SummonByID(1589) end\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
@@ -263,8 +263,8 @@ local function UpdateMountMacroByZone()
         local dismountOnFly = CYRandomMountDB and CYRandomMountDB[charKey] and CYRandomMountDB[charKey].DismountOnFly
                
         local dismountCondition = "IsMounted()"
-        if not dismountOnFly then
-            dismountCondition = dismountCondition .. " and not IsFlying()"
+        if dismountOnFly then
+            dismountCondition = dismountCondition .. " and (IsControlKeyDown() or not IsFlying())"
         end
         
         local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/run if " .. dismountCondition .. " then Dismount() end\n/run if not IsMounted() then C_MountJournal.SummonByID("..mountID..") end\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"

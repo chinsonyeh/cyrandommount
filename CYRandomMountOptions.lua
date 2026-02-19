@@ -108,6 +108,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "Tout sélectionner"
         L["DESELECT_ALL"] = "Tout désélectionner"
         L["SEARCH_MOUNT"] = "Rechercher une monture..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "Se désengager selon l'état de vol"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "Si coché, la macro ne vous fera descendre que si vous n'êtes pas en train de voler."
     -- German
     elseif actualLoc == "deDE" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -127,6 +129,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "Alle auswählen"
         L["DESELECT_ALL"] = "Alle abwählen"
         L["SEARCH_MOUNT"] = "Reittier suchen..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "Absteigen nach Flugstatus"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "Wenn aktiviert, führt das Drücken des Makros nur dann zum Absteigen, wenn Sie nicht fliegen."
     -- Spanish
     elseif actualLoc == "esES" or actualLoc == "esMX" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -146,6 +150,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "Seleccionar todo"
         L["DESELECT_ALL"] = "Deseleccionar todo"
         L["SEARCH_MOUNT"] = "Buscar montura..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "Desmontar según estado de vuelo"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "Si está activado, al pulsar la macro montado solo te desmontará si no estás volando."
     -- Portuguese
     elseif actualLoc == "ptBR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -165,6 +171,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "Selecionar tudo"
         L["DESELECT_ALL"] = "Desselecionar tudo"
         L["SEARCH_MOUNT"] = "Buscar montaria..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "Desmontar com base no estado de voo"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "Se marcado, pressionar a macro enquanto montado só irá desmontar se você não estiver voando."
     -- Russian
     elseif actualLoc == "ruRU" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -184,6 +192,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "Выбрать все"
         L["DESELECT_ALL"] = "Снять все"
         L["SEARCH_MOUNT"] = "Поиск транспорта..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "Сниматься в зависимости от полёта"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "Если включено, нажатие макроса верхом снимет вас только если вы не в полёте."
     -- Korean
     elseif actualLoc == "koKR" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -203,6 +213,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "모두 선택"
         L["DESELECT_ALL"] = "모두 선택 해제"
         L["SEARCH_MOUNT"] = "탈것 검색..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "비행 상태에 따른 하차"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "체크하면, 탑승 상태에서 매크로를 누를 때 비행 중이 아니면 하차합니다."
     -- Japanese
     elseif actualLoc == "jaJP" then
         L["CYRANDOMMOUNT_TITLE"] = "CYRandomMount"
@@ -222,6 +234,8 @@ local function SetLocalization(loc)
         L["SELECT_ALL"] = "すべて選択"
         L["DESELECT_ALL"] = "すべて選択解除"
         L["SEARCH_MOUNT"] = "マウントを検索..."
+        L["DISMOUNT_ON_FLY_LABEL"] = "飛行状態に応じて降車"
+        L["DISMOUNT_ON_FLY_TOOLTIP"] = "チェックすると、騎乗中にマクロを押しても飛行中でない場合のみ降車します。"
     end
 end
 
