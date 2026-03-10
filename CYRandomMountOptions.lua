@@ -601,21 +601,22 @@ function CYRandomMountOptions.CreateOptionsPanel()
                (not charProfile.GroundMounts or #charProfile.GroundMounts == 0) then
                 local defaultProfile = CYRandomMountDB.Default
                 if defaultProfile then
-                    -- Filter and copy flying mounts
+                    -- Copy flying mounts (no isUsable check: mount usability depends on zone,
+                    -- and we want to preserve the user's selections regardless of current zone)
                     charProfile.FlyingMounts = {}
                     for _, mountID in ipairs(defaultProfile.FlyingMounts or {}) do
                         -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
-                        local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
-                        if isUsable then
+                        local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+                        if isCollected and name and not hideOnChar then
                             table.insert(charProfile.FlyingMounts, mountID)
                         end
                     end
-                    -- Filter and copy ground mounts
+                    -- Copy ground mounts (no isUsable check: same reason as above)
                     charProfile.GroundMounts = {}
                     for _, mountID in ipairs(defaultProfile.GroundMounts or {}) do
                         -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
-                        local name, spellID, icon, isActive, isUsable = C_MountJournal.GetMountInfoByID(mountID)
-                        if isUsable then
+                        local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
+                        if isCollected and name and not hideOnChar then
                             table.insert(charProfile.GroundMounts, mountID)
                         end
                     end
@@ -900,7 +901,11 @@ function CYRandomMountOptions.CreateOptionsPanel()
             for _, mountID in ipairs(mountIDs) do
                 -- C_MountJournal.GetMountInfoByID returns: name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, shouldHideOnChar, isCollected, mountID, isForDragonriding
                 local name, spellID, icon, isActive, isUsable, sourceType, isFavorite, isFactionSpecific, faction, hideOnChar, isCollected = C_MountJournal.GetMountInfoByID(mountID)
-                if isCollected and name and icon and not hideOnChar and isUsable then
+                -- Note: isUsable is intentionally NOT checked here, because in non-mountable zones
+                -- (dungeons, indoors, etc.) isUsable returns false for all mounts, which would make
+                -- the options panel mount list appear empty. The options panel should always show
+                -- all collected mounts so users can configure their selections.
+                if isCollected and name and icon and not hideOnChar then
                     table.insert(availableMounts, {mountID = mountID, name = name, icon = icon})
                 end
             end

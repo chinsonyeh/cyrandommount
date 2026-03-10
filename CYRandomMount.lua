@@ -288,6 +288,17 @@ function CYRandomMount_InstantUpdate()
         -- Schedule next mount update
         UpdateMountMacroByZone()
     end
+
+    -- Refresh the drag button icon in the options panel after macro update.
+    -- Use a short delay so the icon reads the already-updated macro info.
+    C_Timer.After(0.05, function()
+        if CYRandomMountOptions and CYRandomMountOptions.panel then
+            local p = CYRandomMountOptions.panel()
+            if p and p.UpdateDragButtonIcon then
+                p.UpdateDragButtonIcon()
+            end
+        end
+    end)
 end
 
 local zoneUpdateFrame = CreateFrame("Frame")

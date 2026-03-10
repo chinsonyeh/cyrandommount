@@ -2,6 +2,13 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.7.1]
+### Fixed
+- Fixed mount list in options panel not displaying in non-mountable zones (dungeons, indoors, etc.): The list was incorrectly filtered by `isUsable`, which returns `false` for all mounts when mounting is restricted. The options panel now always shows all collected mounts regardless of the current zone.
+
+### Changed
+- The draggable macro icon in the options panel now updates in real-time after each macro press, reflecting the newly selected random mount icon immediately.
+
 ## [2.7.0]
 ### Added
 - Added "Dismount based on flight status" option (DismountOnFly): When enabled, pressing the macro while mounted will only dismount you if you are not flying
