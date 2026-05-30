@@ -194,11 +194,53 @@ local function SafeEditMacro(...)
     end
 end
 
+-- Returns true if the player is currently inside Slayer's Rise (虛空史詩戰場),
+-- the epic battleground introduced in Patch 12.0.1 (Midnight expansion).
+-- Slayer's Rise is a 40v40 epic battleground set in the Voidstorm zone.
+-- Detection uses GetInstanceInfo() which is locale-independent via instanceType + name.
+local function IsInSlayersRise()
+    local instanceName, instanceType = GetInstanceInfo()
+    -- instanceType is "pvp" for all battlegrounds (both regular and epic)
+    if instanceType ~= "pvp" then return false end
+    -- Match against all known locale names of Slayer's Rise
+    -- NOTE: GetInstanceInfo() returns the name in the current client locale.
+    -- The zhCN translation below is unverified; update if different.
+    return instanceName == "Slayer's Rise"  -- enUS / enGB
+        or instanceName == "剎戳者高地"         -- zhTW
+        or instanceName == "屠戮者高地"         -- zhCN (TODO: confirm in-game; update if different from zhTW)
+end
+
 local function UpdateMountMacroByZone()
     if MacroFrame and MacroFrame:IsShown() then return end
 
     local macroIndex = GetMacroIndexByName(macroName)
     if not macroIndex or macroIndex == 0 then return end
+
+    -- Special case: Slayer's Rise (虛空史詩戰場) epic battleground — always use a flying mount
+    if IsInSlayersRise() then
+        if ShowDebug then print("CYRandomMount: In Slayer's Rise (虛空史詩戰場), forcing flying mount.") end
+        local currentMountID = GetCurrentMountIDFromMacro()
+        local mountID = GetRandomSelectedFlyingMount(currentMountID)
+        if mountID then
+            local name, spellID, icon = C_MountJournal.GetMountInfoByID(mountID)
+            if name then
+                local charKey = GetCharacterKey()
+                local dismountOnFly = CYRandomMountDB and CYRandomMountDB[charKey] and CYRandomMountDB[charKey].DismountOnFly
+                local dismountCondition = "IsMounted()"
+                if dismountOnFly then
+                    dismountCondition = dismountCondition .. " and (IsControlKeyDown() or not IsFlying())"
+                end
+                local macroBodyStr = "#showtooltip "..name.."\n/stopcasting\n/run if " .. dismountCondition .. " then Dismount() end\n/run if not IsMounted() then C_MountJournal.SummonByID("..mountID..") end\n/run C_Timer.After(0.1, CYRandomMount_InstantUpdate)\n"
+                SafeEditMacro(macroIndex, macroName, icon or macroIcon, macroBodyStr, 1, 1)
+                if ShowDebug then
+                    print("CYRandomMount: Updated macro for Slayer's Rise with flying mount ID: " .. tostring(mountID))
+                end
+            end
+        elseif ShowDebug then
+            print("CYRandomMount: No usable flying mount found for Slayer's Rise.")
+        end
+        return
+    end
 
     local zoneID = C_Map.GetBestMapForUnit("player")
     if zoneID == 2346 then -- Undermine

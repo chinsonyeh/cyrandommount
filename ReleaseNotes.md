@@ -2,6 +2,10 @@
 
 This file documents all notable changes to the CYRandomMount project. The format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [2.7.2]
+### Changed
+- Updated TOC interface version to 120005 for WoW 12.0.5 (Lingering Shadows) compatibility
+
 ## [2.7.1]
 ### Fixed
 - Fixed mount list in options panel not displaying in non-mountable zones (dungeons, indoors, etc.): The list was incorrectly filtered by `isUsable`, which returns `false` for all mounts when mounting is restricted. The options panel now always shows all collected mounts regardless of the current zone.
